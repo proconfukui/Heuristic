@@ -2,10 +2,10 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "create_answer Debug",
+            "name": "create_answer_json Debug",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/bin/create_answer.exe",
+            "program": "${workspaceFolder}/bin/create_answer_json.exe",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
@@ -20,7 +20,7 @@
                     "ignoreFailures": true
                 }
             ],
-            "preLaunchTask": "build-create_answer"
+            "preLaunchTask": "build-create_ansewer_json"
         },
         {
             "name": "evalution Debug",
