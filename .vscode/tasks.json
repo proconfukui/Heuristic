@@ -1,0 +1,102 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build-create_ansewer_json",
+            "type": "shell",
+            "command": "g++",
+            "args": [
+                "-g",
+                "-pg",
+                "create_answer_json.cpp",
+                "-o",
+                "./bin/create_answer_json.exe",
+            ],
+            "group": "build",
+            "problemMatcher": [
+                "$gcc"
+            ]
+        },
+        {
+            "label": "build-evalution",
+            "type": "shell",
+            "command": "g++",
+            "args": [
+                "evalution.cpp",
+                "-o",
+                "./bin/evalution.exe",
+                "-g",
+                "-finput-charset=UTF-8",
+                "-fexec-charset=UTF-8",
+                "-Wall",
+                "-Wextra",
+
+            ],
+            "group": "build",
+            "problemMatcher": [
+                "$gcc"
+            ]
+        },
+        {
+            "label": "build-input_problem",
+            "type": "shell",
+            "command": "g++",
+            "args": [
+                "input_problem.cpp",
+                "-o",
+                "./bin/input_problem.exe",
+                "-g",
+                "-finput-charset=UTF-8",
+                "-fexec-charset=UTF-8",
+                "-Wall",
+                "-Wextra",
+
+            ],
+            "group": "build",
+            "problemMatcher": [
+                "$gcc"
+            ]
+        },
+        {
+            "label": "build-main",
+            "type": "shell",
+            "command": "g++",
+            "args": [
+                "main.cpp",
+                "-o",
+                "./bin/main.exe",
+                "-g",
+                "-finput-charset=UTF-8",
+                "-fexec-charset=UTF-8",
+                "-Wall",
+                "-Wextra",
+
+            ],
+            "group": "build",
+            "problemMatcher": [
+                "$gcc"
+            ]
+        },
+         {
+            "label": "build-print_analysis",
+            "type": "shell",
+            "command": "g++",
+            "args": [
+                "print_analysis.cpp",
+                "-o",
+                "./bin/print_analysis.exe",
+                "-g",
+                "-finput-charset=UTF-8",
+                "-fexec-charset=UTF-8",
+                "-Wall",
+                "-Wextra",
+
+            ],
+            "group": "build",
+            "problemMatcher": [
+                "$gcc"
+            ]
+        },
+        
+    ]
+}
