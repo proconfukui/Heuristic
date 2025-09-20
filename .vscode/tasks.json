@@ -18,6 +18,15 @@
             ]
         },
         {
+            "label": "rm-create_ansewer_json",
+            "type": "shell",
+            "command": "rm",
+            "args": [
+                "./bin/create_answer_json.exe",
+            ],
+            "group": "build",
+        },
+        {
             "label": "build-evalution",
             "type": "shell",
             "command": "g++",
@@ -33,6 +42,15 @@
             ]
         },
         {
+            "label": "rm-evalution",
+            "type": "shell",
+            "command": "rm",
+            "args": [
+                "./bin/evalution.exe"
+            ],
+            "group": "build",
+        },
+        {
             "label": "build-input_problem",
             "type": "shell",
             "command": "g++",
@@ -46,6 +64,15 @@
             "problemMatcher": [
                 "$gcc"
             ]
+        },
+         {
+            "label": "rm-input_problem",
+            "type": "shell",
+            "command": "rm",
+            "args": [
+                "./bin/input_problem.exe",
+            ],
+            "group": "build",
         },
         {
             "label": "build-main",
@@ -63,6 +90,15 @@
             ]
         },
          {
+            "label": "rm-main",
+            "type": "shell",
+            "command": "rm",
+            "args": [
+                "./bin/main.exe",
+            ],
+            "group": "build",
+        },
+         {
             "label": "build-print_analysis",
             "type": "shell",
             "command": "g++",
@@ -76,6 +112,15 @@
             "problemMatcher": [
                 "$gcc"
             ]
+        },
+        {
+            "label": "rm-print_analysis",
+            "type": "shell",
+            "command": "rm",
+            "args": [
+                "./bin/print_analysis.exe"
+            ],
+            "group": "build",
         },
         
     ]

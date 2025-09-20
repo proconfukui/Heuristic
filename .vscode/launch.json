@@ -20,7 +20,8 @@
                     "ignoreFailures": true
                 }
             ],
-            "preLaunchTask": "build-create_ansewer_json"
+            "preLaunchTask": "build-create_ansewer_json",
+            "postDebugTask": "rm-create_ansewer_json"
         },
         {
             "name": "evalution Debug",
@@ -41,7 +42,8 @@
                     "ignoreFailures": true
                 }
             ],
-            "preLaunchTask": "build-evalution"
+            "preLaunchTask": "build-evalution",
+            "postDebugTask": "rm-evalution"
         },
         {
             "name": "input_problem Debug",
@@ -62,7 +64,8 @@
                     "ignoreFailures": true
                 }
             ],
-            "preLaunchTask": "build-input_problem"
+            "preLaunchTask": "build-input_problem",
+            "postDebugTask": "rm-input_problem"
         },
         {
             "name": "main Debug",
@@ -83,7 +86,8 @@
                     "ignoreFailures": true
                 }
             ],
-            "preLaunchTask": "build-main"
+            "preLaunchTask": "build-main",
+            "postDebugTask": "rm-main"
         },
          {
             "name": "print_analysis Debug",
@@ -104,7 +108,8 @@
                     "ignoreFailures": true
                 }
             ],
-            "preLaunchTask": "build-print_analysis"
+            "preLaunchTask": "build-print_analysis",
+            "postDebugTask": "rm-print_analysis"
         },
     ]
 }
