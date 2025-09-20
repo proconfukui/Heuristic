@@ -27,14 +27,18 @@ void initialize(int& start_time,vector<vector<int>>& field,vector<float>& weight
   int field_size;
   cin >> field_size;
   for(int i = 0; i < field_size ; i++){
-    for(int j = 0; i < field_size;i++){
-      cin >> field[i][j];
+    vector<int> row(field_size);
+    for(int j = 0; j < field_size;j++){
+      cin >> row[j];
     }
+    field.push_back(row);
   }
   int weight_size;
   cin >> weight_size;
+  float value;
   for(int i = 0; i < weight_size; i++){
-    cin >> weights[i];
+    cin >> value;
+    weights.push_back(value);
   }
 }
 
