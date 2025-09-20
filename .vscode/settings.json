@@ -64,7 +64,7 @@
         "xiosbase": "cpp",
         "xlocale": "cpp",
         "xlocbuf": "cpp",
-        "xlocinfo": "cpp",
+        "xlostd::cinfo": "cpp",
         "xlocmes": "cpp",
         "xlocmon": "cpp",
         "xlocnum": "cpp",
