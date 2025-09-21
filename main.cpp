@@ -15,6 +15,7 @@ using std::pair;
 using std::rand;
 using std::setw;
 using std::vector;
+using std::unordered_map;
 
 void initialize(int &start_time, vector<vector<int>> &field, vector<float> &weights);
 void print_answer(int time, int step, vector<Operation> &ops, vector<vector<int>> &field);
@@ -23,6 +24,7 @@ void print_field(vector<vector<int>> &field);
 void rotate(vector<vector<int>> &field, Operation op);
 void unrotate(vector<vector<int>> &field, Operation op);
 int rand_int(int a, int b);
+unsigned long calculate_hash(vector<vectro<int>> field);
 
 
 
@@ -48,45 +50,72 @@ vector<Operation> beam_search(vector<vector<int>> &field, function<float(vector<
   vector<BeamNode> nodes;
   vector<BeamNode> next_nodes;
   vector<Operation> samples;
-  vector<pair<float, Operation>> sample_value_pairs;
+  vector<vector<int>> tmp_field;
+  vector<Operation> tmp_ops;
+  unordered_map<unsigned long,vector<vector<int>>> hash_map;
+
 
   // メモリを事前確保
   next_nodes.reserve(depth * num_sample * sizeof(BeamNode));
-  samples.reserve(num_sample * width * sizeof(Operation));
-  sample_value_pair.reserve(num_sample * width * sizeof(pair<float, Operation>));
+  samples(num_sample * sizeof(Operation));
 
   // 初期場面のノードを代入
-  nodes.push_back({field, evaluator(field), []});
+  nodes.push_back({calculate_hash(field), evaluator(field), []});
 
   // 300回操作した時点で強制終了
   for (int time = 0; time < 300; time++)
   {
-    
     for (int d = 0; d < depth; d++)
     {
-      
+      // sampleにnum_sample個のランダムの要素を入れる
+      for(int s = 0; s < num_sample; s++){
+        int x = rand_int(0, field.size() - n);
+        int y = rand_int(0, field.size() - n);
+        int n = rand_int(2, field.size());
+        samples.push_back({x,y,n});
+      }
 
-      for (auto node : nodes)
-      {
+      // next_nodeに新しい生成されるnodeを作る
+      for(auto node : nodes){
+        for(const auto& op : samples){
+          tmp_field = hash_map[node.field_hash];
+          rotate(tmp_field,op);
 
+          // 同じ局面が既に出てきている場合は飛ばす
+          if (hash_map.find(calculate_hash(tmp_field)) != hash_map.end()) continue;
 
-
-
-        for (int k = 0; k < width; k++)
-        {
-          rotate(node.field,sample_value_pairs[k].second):
-          // 評価値と盤面、nodesの履歴からnextnodeに新しいnodeを追加
-
-          unrotate(node.field,sample_value_pairs[k].second);
+          tmp_ops = node.ops;
+          tmp_ops.push_back(op);
+          
+          next_nodes.push_back({calculate_hash(tmp_field),tmp_ops,evaluator(tmp_field)});
         }
       }
-      nodes = next_nodes;
+
+      // next_nodeから評価値の高いwidth個のnodeを抽出
+      sort(next_nodes.begin(), next_nodes.end(), [](const BeamNode& a, const BeamNode& b) {
+            return a.score > b.score;
+      });
+      if (next_nodes.size() > width) next_nodes.resize(width);
+
+      
+      nodes = move(next_nodes);
       next_nodes.clear();
     }
   }
-  return nodes;
+  return ;
 }
 
+// 二次元配列のハッシュ値を計算するための関数
+unsigned long calculate_hash(vector<vectro<int>> field){
+  int HASH_BASE = 41;
+    unsigned long current_hash = 0;
+    for(const auto& row : field){
+        for(int cell_value : row){
+            current_hash = current_hash * HASH_BASE + cell_value;
+        }
+    }
+    return current_hash;
+}
 
 
 // a以上b以下のランダムな整数

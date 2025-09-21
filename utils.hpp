@@ -27,7 +27,7 @@ struct Operation
 };
 
 struct BeamNode {
-    vector<vector<int>> field;
+    unsigned long field_hash;
     vector<Operation> ops;
     float score;
 };
