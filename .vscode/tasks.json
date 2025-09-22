@@ -80,6 +80,7 @@
             "command": "g++",
             "args": [
                 "main.cpp",
+                "base.cpp",
                 "-o",
                 "./bin/main.exe",
                 "-g",
