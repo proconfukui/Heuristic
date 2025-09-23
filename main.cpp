@@ -7,6 +7,7 @@
 #include <chrono>
 #include "utils.hpp"
 #include "base.hpp"
+#include "evalution.hpp"
 
 using std::cin;
 using std::cout;
@@ -32,18 +33,18 @@ int main()
   vector<vector<int>> field;
   vector<float> weights;
   initialize(start_time, field, weights);
-  print_field(field);
+  print_matrix(field);
 
   auto begin_time = std::chrono::high_resolution_clock::now();
   for(int i = 0;i< 1000000;i++){
-    count_pair(field);
+    evaluate_distance(field);
   }
   auto end_time = std::chrono::high_resolution_clock::now();
   auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - begin_time);
   cout << "exe_time: " << duration.count() << " ms" << endl;
 
-  cout << count_pair(field) << endl;
-  print_field(field);
+  cout << evaluate_distance(field) << endl;
+  print_matrix(field);
 }
 
 // ビームサーチ

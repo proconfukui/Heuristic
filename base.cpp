@@ -66,8 +66,7 @@ int count_pair(const vector<vector<int>>& field){
         for (int x = 0; x < field.size() -1 ; x++) {
             if(field[y][x] == field[y][x+1]&& field[y][x] == field[y+1][x]){
                 counter++;
-            }
-            
+            } 
         }
     }
     int max_pair_number = field.size()*field.size()/2;
@@ -76,9 +75,9 @@ int count_pair(const vector<vector<int>>& field){
 
 
 
-// デバッグ用。fieldの状態をターミナルに表示する
+// デバッグ用。matrixの状態をターミナルに表示する
 // テスト済
-void print_field(const vector<vector<int>> &field)
+void print_matrix(const vector<vector<int>> &field)
 {
   cout << "   ";
   for (int i = 0; i < field.size(); i++)
@@ -97,6 +96,30 @@ void print_field(const vector<vector<int>> &field)
   }
   cout << endl;
 }
+
+
+// デバッグ用。matrixの状態をターミナルに表示する。
+// テスト済
+void print_matrix(const vector<vector<float>> &field)
+{
+  cout << "     ";
+  for (int i = 0; i < field.size(); i++)
+  {
+    cout << setw(5) << i << "|";
+  }
+  cout << endl;
+  for (int y = 0; y < field.size(); y++)
+  {
+    cout << setw(4) << y << "|";
+    for (int x = 0; x < field.size(); x++)
+    {
+      cout << setw(5) << field[y][x] << " ";
+    }
+    cout << endl;
+  }
+  cout << endl;
+}
+
 
 // 二次元配列のハッシュ値を計算するための関数
 unsigned long calculate_hash(vector<vector<int>> field){
