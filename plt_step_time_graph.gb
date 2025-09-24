@@ -1,0 +1,12 @@
+# plt_step_time_graph.gb
+
+set title "time per step"
+
+set xlabel "step"
+set ylabel "Time(ms)"
+
+set terminal pngcairo
+set output "./picture/time_per_step.png"
+
+
+plot "./testcase/time_per_step.txt" using 1:2

@@ -1,11 +1,14 @@
 #include "evalution.hpp"
 #include <vector>
+#include <functional>
 #include "base.hpp"
 
 using std::vector;
+using std::function;
 
 // ペア候補間の距離を測定する
-int evaluate_distance(const vector<vector<int>> &field)
+// テスト済
+int measure_distance(const vector<vector<int>> &field)
 {
   int max_pair_number = field.size() * field.size() / 2;
   vector<vector<int>> pair_coordinates = vector<vector<int>>(max_pair_number, vector<int>(4, -1));
@@ -35,19 +38,51 @@ int evaluate_distance(const vector<vector<int>> &field)
 }
 
 // ある関数を与えることにより、その関数をZ軸を中心に回転させたときの、(X,Y)のZの大きさが格納された大きさsizeの二重配列を返す
-vector<vector<float>> create_weight_matrix(int size,function<float(float)>& func) {
-  vector<vector<float>> matrix = vector<vector<float>>(size,vector<float>(size,0));
-  for(int y = 0;y<size;y++){
-    for(int x = 0;x<size;x++){
-      float distance = pow(pow(x,2) + pow(y,2),0.5);
-      matrix[y][x] = funx(distance);
+// テスト済
+vector<vector<float>> create_weight_matrix(int size, function<float(float)> func)
+{
+  int center = size/2;
+  vector<vector<float>> matrix = vector<vector<float>>(size, vector<float>(size, 0));
+  for (int y = 0; y < size; y++)
+  {
+    for (int x = 0; x < size; x++)
+    {
+      int x_dis = 0;
+      int y_dis = 0;
+      if(x < center){
+        x_dis = center - x;
+      }else{
+        x_dis = x - center + 1;
+      }
+      if(y < center){
+        y_dis = center - y;
+      }else{
+        y_dis = y - center + 1;
+      }
+      float distance = pow(pow(x_dis, 2) + pow(y_dis, 2), 0.5);
+      matrix[y][x] = func(distance);
     }
   }
   return matrix;
 }
 
 // ペアの数を重みを付けて計算する
-float count_weighted_pair(const vector<vector<int>>& field,const vector<vector<float>>& weight_matrix){
-  
+float count_weighted_pair(const vector<vector<int>> &field, const vector<vector<float>> &weight_matrix)
+{
+  float counter = 0;
+  for (int y = 0; y < field.size() - 1; y++)
+  {
+    for (int x = 0; x < field.size() - 1; x++)
+    {
+      if (field[y][x] == field[y][x + 1])
+      {
+        counter += weight_matrix[y][x] + weight_matrix[y][x + 1];
+      }
+      if (field[y][x] == field[y + 1][x])
+      {
+        counter += weight_matrix[y][x] + weight_matrix[y + 1][x];
+      }
+    }
+  }
+  return counter;
 }
-

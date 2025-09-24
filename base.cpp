@@ -59,17 +59,23 @@ void unrotate(vector<vector<int>> &field, Operation op)
 }
 
 // ペアの数を数える
-// 
+// テスト済
 int count_pair(const vector<vector<int>>& field){
     int counter = 0;
-    for (int y = 0; y < field.size() -1 ; y++) {
+    for (int y = 0; y < field.size(); y++) {
         for (int x = 0; x < field.size() -1 ; x++) {
-            if(field[y][x] == field[y][x+1]&& field[y][x] == field[y+1][x]){
+            if(field[y][x] == field[y][x+1]){
                 counter++;
             } 
         }
     }
-    int max_pair_number = field.size()*field.size()/2;
+    for (int y = 0; y < field.size()-1; y++) {
+        for (int x = 0; x < field.size(); x++) {
+            if(field[y][x] == field[y+1][x]){
+                counter++;
+            } 
+        }
+    }
     return counter;
 }
 
