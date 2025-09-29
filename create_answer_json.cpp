@@ -10,22 +10,23 @@ struct ops {
   int n;
 };
 
-// この関数でキーを追加した順番が保持されるようになります
 void to_json(json& j, const ops& o) {
-  j = json{
-      {"x", o.x},  // 1番目
-      {"y", o.y},  // 2番目
-      {"n", o.n}   // 3番目
-  };
+  j = json{{"x", o.x}, {"y", o.y}, {"n", o.n}};
 }
 
 int main() {
-  std::vector<ops> data = {{0, 1, 2}, {3, 4, 5}, {6, 7, 8}};
+  std::vector<ops> data;
 
+  // 記録された計算結果（例）
+  data.push_back({0, 0, 2});
+  data.push_back({2, 2, 2});
+  data.push_back({4, 4, 8});
+
+  // JSONに変換して出力
   json j;
   j["ops"] = data;
+  j["size"] = data.size();
 
-  // dump(4)で整形して出力
   std::cout << j.dump(4) << std::endl;
 
   return 0;
