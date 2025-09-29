@@ -24,12 +24,7 @@ int main(){
   vector<float> pair_ratios;
   
   // main.cppと合わせる
-  vector<vector<float>> weight_matrix = create_weight_matrix(field.size(),[](float x){return pow(x,3);});
-
-  analys_answer(ops,field,values,pair_ratios,[=](vector<vector<int>>& field){
-    // main.cppと合わせる
-    return  count_weighted_pair(field,weight_matrix) - measure_distance(field);
-  });
+  analys_answer(ops,field,values,pair_ratios,func1);
   print_analysis(values,pair_ratios);
   return 0;
 }

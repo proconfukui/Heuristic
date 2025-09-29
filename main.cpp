@@ -47,28 +47,13 @@ int main()
   initialize(start_time, field, weights);
 
 
-  vector<vector<float>> weight_matrix = create_weight_matrix(field.size(),[](float x){return pow(x,3);});
-
-  // count_weighted_pairの最大の値
-  // float max_pair_score = 0;
-  // for(int i =0;i<field.size();i++){
-  //   for(int j = 0;j<field.size();j++){
-  //     max_pair_score += weight_matrix[i][j];
-  //   }
-  // }
-
-  // // 初期場面のmeasure_distanceの値
-  // float first_dis = measure_distance(field);
-
   // 解答用の配列
   vector<Operation> answer;
 
   // 処理の本体。時間を計測する
   // auto begin_time = std::chrono::high_resolution_clock::now();
   
-  answer = beam_search(field,10,20,7,100,[=](vector<vector<int>>& field){
-    return  count_weighted_pair(field,weight_matrix) - measure_distance(field);
-  });
+  answer = beam_search(field,10,20,7,100,func1);
 
   // auto end_time = std::chrono::high_resolution_clock::now();
   // auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - begin_time);

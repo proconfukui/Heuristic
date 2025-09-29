@@ -7,4 +7,5 @@ using std::function;
 
 int measure_distance(const vector<vector<int>>& field);
 vector<vector<float>> create_weight_matrix(int size, function<float(float)> func);
-float count_weighted_pair(const vector<vector<int>> &field, const vector<vector<float>> &weight_matrix);
+float count_weighted_pair(const vector<vector<int>> &field);
+float func1(const vector<vector<int>> &field);

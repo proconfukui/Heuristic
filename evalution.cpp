@@ -67,7 +67,7 @@ vector<vector<float>> create_weight_matrix(int size, function<float(float)> func
 }
 
 // ペアの数を重みを付けて計算する
-float count_weighted_pair(const vector<vector<int>> &field, const vector<vector<float>> &weight_matrix)
+float count_weighted_pair(const vector<vector<int>> &field)
 {
   float counter = 0;
   for (int y = 0; y < field.size() - 1; y++)
@@ -85,4 +85,13 @@ float count_weighted_pair(const vector<vector<int>> &field, const vector<vector<
     }
   }
   return counter;
+}
+
+float func1(const vector<vector<int>> &field){
+  static bool isFirstCall = true;
+  if (isFirstCall) {
+    weight_matrix = create_weight_matrix(field.size(),[](float x){return pow(x,3);});
+    isFirstCall = false;
+  }
+  return  count_weighted_pair(field) - measure_distance(field);
 }
