@@ -94,7 +94,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/bin/print_analysis.exe",
-            "args": [],
+            "args": ["<","./testcase/print_analysis_moq.txt"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],

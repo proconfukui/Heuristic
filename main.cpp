@@ -30,10 +30,10 @@ using std::string;
 
 
 void initialize(int &start_time, vector<vector<int>> &field, vector<float> &weights);
-void print_answer(int time, int step, const vector<Operation> &ops, const vector<vector<int>> &field);
-vector<Operation> beam_search(vector<vector<int>> field, int depth, int width, int commit_step,int num_sample, const function<float(vector<vector<int>> &)> &evaluator);
+void print_answer(int time, const vector<Operation> &ops, const vector<vector<int>> &field);
+vector<Operation> beam_search(const vector<vector<int>>& field, int depth, int width, int commit_step,int num_sample, const function<float(vector<vector<int>> &)> &evaluator);
 vector<Operation> best_operations_random(const vector<vector<int>>& field,int num_sample,int width,const function<float(vector<vector<int>>&)> &evaluator);
-void export_answer(const string& filename, vector<Operation> ops);
+// void export_answer(const string& filename, vector<Operation> ops);
 
 int main()
 {
@@ -50,52 +50,53 @@ int main()
   vector<vector<float>> weight_matrix = create_weight_matrix(field.size(),[](float x){return pow(x,3);});
 
   // count_weighted_pairの最大の値
-  float max_pair_score = 0;
-  for(int i =0;i<field.size();i++){
-    for(int j = 0;j<field.size();j++){
-      max_pair_score += weight_matrix[i][j];
-    }
-  }
+  // float max_pair_score = 0;
+  // for(int i =0;i<field.size();i++){
+  //   for(int j = 0;j<field.size();j++){
+  //     max_pair_score += weight_matrix[i][j];
+  //   }
+  // }
 
-  // 初期場面のmeasure_distanceの値
-  float first_dis = measure_distance(field);
+  // // 初期場面のmeasure_distanceの値
+  // float first_dis = measure_distance(field);
 
   // 解答用の配列
   vector<Operation> answer;
 
   // 処理の本体。時間を計測する
-  auto begin_time = std::chrono::high_resolution_clock::now();
+  // auto begin_time = std::chrono::high_resolution_clock::now();
   
   answer = beam_search(field,10,20,7,100,[=](vector<vector<int>>& field){
-    return  count_weighted_pair(field,weight_matrix) -measure_distance(field);
+    return  count_weighted_pair(field,weight_matrix) - measure_distance(field);
   });
 
-  auto end_time = std::chrono::high_resolution_clock::now();
-  auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - begin_time);
-  cout << "exe_time: " << duration.count() << " ms" << endl;
+  // auto end_time = std::chrono::high_resolution_clock::now();
+  // auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - begin_time);
+  // cout << "exe_time: " << duration.count() << " ms" << endl;
 
 
 
   float max_pair_number = field.size() * field.size() / 2;
 
   // 解答をターミナルに表示する
-  for(const auto& op : answer){
-    rotate(field,op);
-    cout << count_pair(field) << endl;
-    cout << "closed ratio " << static_cast<float>(count_pair(field)) / max_pair_number * 100<< "%" << endl;
-    print_matrix(field);
-  }
-  export_answer("./testcase/answer.json",answer);
-
+  // for(const auto& op : answer){
+  //   rotate(field,op);
+  //   cout << count_pair(field) << endl;
+  //   cout << "closed ratio " << static_cast<float>(count_pair(field)) / max_pair_number * 100<< "%" << endl;
+  //   print_matrix(field);
+  // }
+  // export_answer("./testcase/answer.json",answer);
+  print_answer(start_time,answer,field);
 }
 
 // ビームサーチ
 // 未テスト
-vector<Operation> beam_search(vector<vector<int>> field, int depth, int width, int commit_step,int num_sample, const function<float(vector<vector<int>> &)> &evaluator)
+vector<Operation> beam_search(const vector<vector<int>>& field, int depth, int width, int commit_step,int num_sample, const function<float(vector<vector<int>> &)> &evaluator)
 {
+  vector<vector<int>> tmp_field = field;
 
   // 最大のペア数
-  int max_pair_number = field.size() * field.size() / 2;
+  int max_pair_number = tmp_field.size() * tmp_field.size() / 2;
 
   // 解答用の配列
   vector<Operation> answer = {};
@@ -117,15 +118,15 @@ vector<Operation> beam_search(vector<vector<int>> field, int depth, int width, i
   vector<int> time_clocks;
 
   // max_time回操作した時点で強制終了
-  int max_time = 100;
+  int max_time = 10;
   for (int time = 0; time < max_time; time++)
   {
     // 初期場面のノードを代入
-    nodes.push_back({field, {} , evaluator(field)});
+    nodes.push_back({tmp_field, {} , evaluator(tmp_field)});
 
     // commit_step回のステップにどれほど時間がかかるかを計測
-    cout << "time :" << time <<endl;
-    auto begin_time = std::chrono::high_resolution_clock::now();
+    // cout << "time :" << time <<endl;
+    // auto begin_time = std::chrono::high_resolution_clock::now();
 
     for (int d = 0; d < depth; d++)
     {
@@ -155,9 +156,9 @@ vector<Operation> beam_search(vector<vector<int>> field, int depth, int width, i
     const auto& best = nodes.front();
     for(int i = 0; i < commit_step;i++){
       answer.push_back(best.ops[i]);
-      rotate(field,best.ops[i]);
+      rotate(tmp_field,best.ops[i]);
       // 全てのペアが完成した時点でゲーム終了
-      if(count_pair(field) == max_pair_number){
+      if(count_pair(tmp_field) == max_pair_number){
         return answer;
       }
     }
@@ -165,15 +166,10 @@ vector<Operation> beam_search(vector<vector<int>> field, int depth, int width, i
     nodes.clear();
 
     // commit_step回のステップにどれほど時間がかかるかを計測
-    auto end_time = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - begin_time);
-    cout << "exe_time: " << duration.count() << " ms" << endl;
-    time_clocks.push_back(duration.count());
-  }
-
-  // gnuplotで解析しやすいようデータを出力
-  for(int i = 0;i<max_time;i++){
-    cout << i * commit_step << " " << time_clocks[i] << endl;
+    // auto end_time = std::chrono::high_resolution_clock::now();
+    // auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - begin_time);
+    // cout << "exe_time: " << duration.count() << " ms" << endl;
+    // time_clocks.push_back(duration.count());
   }
 
   return answer;
@@ -241,37 +237,36 @@ void initialize(int &start_time, vector<vector<int>> &field, vector<float> &weig
 
 // 出力用関数
 // 未テスト
-void print_answer(int time, int step, const vector<Operation> &ops, const vector<vector<int>> &field)
+void print_answer(int time, const vector<Operation> &ops, const vector<vector<int>> &field)
 {
   cout << time << endl;
-  cout << step << endl;
   cout << ops.size() << endl;
   for (const auto &op : ops)
   {
-    cout << op.x << op.y << op.n << endl;
+    cout << op.n <<" "<< op.x << " "<< op.y  << endl;
   }
-  cout << endl;
+  cout << field.size() << endl;
   for (const auto &row : field)
   {
     for (const auto &element : row)
     {
-      cout << element;
+      cout << element << " ";
     }
     cout << endl;
   }
 }
 
 
-// 後で別の実行ファイルとして切り分ける
-void export_answer(const string& filename, vector<Operation> ops){
-    nlohmann::json answer;
-    for (size_t i = 0; i < ops.size(); i++) {
-        answer["ops"][i]["x"] = ops[i].x;
-        answer["ops"][i]["y"] = ops[i].y;
-        answer["ops"][i]["n"] = ops[i].n;
-    }
-    ofstream output(filename);
-    output << setw(4) << answer << endl;
-    output.close();
-}
+// // 後で別の実行ファイルとして切り分ける
+// void export_answer(const string& filename, vector<Operation> ops){
+//     nlohmann::json answer;
+//     for (size_t i = 0; i < ops.size(); i++) {
+//         answer["ops"][i]["x"] = ops[i].x;
+//         answer["ops"][i]["y"] = ops[i].y;
+//         answer["ops"][i]["n"] = ops[i].n;
+//     }
+//     ofstream output(filename);
+//     output << setw(4) << answer << endl;
+//     output.close();
+// }
 

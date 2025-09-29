@@ -106,6 +106,8 @@
             "command": "g++",
             "args": [
                 "print_analysis.cpp",
+                "base.cpp",
+                "evalution.cpp",
                 "-o",
                 "./bin/print_analysis.exe",
                 "-g",
