@@ -18,14 +18,13 @@ int main() {
   std::vector<ops> data;
 
   // 記録された計算結果（例）
-  data.push_back({0, 0, 2});
-  data.push_back({2, 2, 2});
-  data.push_back({4, 4, 8});
+  // data.push_back({0, 0, 2});
+  // data.push_back({2, 2, 2});
+  // data.push_back({4, 4, 8});
 
   // JSONに変換して出力
   json j;
   j["ops"] = data;
-  j["size"] = data.size();
 
   std::cout << j.dump(4) << std::endl;
 
