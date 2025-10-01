@@ -1,6 +1,7 @@
 #include <fstream>
 #include <iostream>
 #include <cstdlib>
+#include <sstream>
 
 #include "json.hpp"
 
@@ -73,7 +74,20 @@ int main(int argc, char* argv[]) {
   while (getline(weight_file, line)) {
     current_line++;
     if (current_line == target_line) {
+      
+      
+      // 重みの数をカウント
+      istringstream iss(line);
+      string token;
+      int weight_count = 0;
+      
+      while (iss >> token) {
+        weight_count++;
+      }
+      
+      cout << weight_count << endl;
       cout << line << endl;
+
       found = true;
       break;
     }
