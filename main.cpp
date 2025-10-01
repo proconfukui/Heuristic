@@ -53,7 +53,9 @@ int main()
   // 処理の本体。時間を計測する
   // auto begin_time = std::chrono::high_resolution_clock::now();
   
-  answer = beam_search(field,10,20,7,100,func1);
+  answer = beam_search(field,10,20,7,100,[=](vector<vector<int>>& field){
+    return static_cast<float>(count_pair(field));
+  });
 
   // auto end_time = std::chrono::high_resolution_clock::now();
   // auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - begin_time);

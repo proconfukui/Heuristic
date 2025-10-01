@@ -50,7 +50,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/bin/input_problem.exe",
-            "args": ["./testcase/problem.json","./testcase/weights.txt","1"],
+            "args": ["testcase/problem.json","testcase/weights.txt","1"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],

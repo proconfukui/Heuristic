@@ -55,7 +55,6 @@ int main(int argc, char* argv[]) {
 
   // 重みファイルから指定された行を読み取り
   ifstream weight_file(argv[2]);
-  cout << argv[2] << endl;
   if (!weight_file) {
     cerr << "重みファイルが開けませんでした。" << endl;
     return 1;
