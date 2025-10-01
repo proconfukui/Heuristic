@@ -6,6 +6,8 @@
 using std::vector;
 using std::function;
 
+vector<vector<int>> weight_matrix;
+
 // ペア候補間の距離を測定する
 // テスト済
 int measure_distance(const vector<vector<int>> &field)
@@ -66,6 +68,25 @@ vector<vector<float>> create_weight_matrix(int size, function<float(float)> func
   return matrix;
 }
 
+// z = (xy)^2の分布に基づいた重みの二重配列を返す
+vector<vector<float>> create_x2y2_weight_matrix(int size){
+  vector<vector<float>> matrix = vector<vector<float>>(size, vector<float>(size, 0));
+  
+  for (int y = 0; y < size; y++) {
+    for (int x = 0; x < size; x++) {
+      // (x,y)を[-1,1]の範囲にマッピング
+      float normalized_x = (2.0f * x) / (size - 1) - 1.0f;
+      float normalized_y = (2.0f * y) / (size - 1) - 1.0f;
+      
+      // z = (xy)^2 を計算
+      float z = pow(normalized_x * normalized_y, 2);
+      matrix[y][x] = z;
+    }
+  }
+  
+  return matrix;
+}
+
 // ペアの数を重みを付けて計算する
 float count_weighted_pair(const vector<vector<int>> &field)
 {
@@ -90,7 +111,9 @@ float count_weighted_pair(const vector<vector<int>> &field)
 float func1(const vector<vector<int>> &field){
   static bool isFirstCall = true;
   if (isFirstCall) {
-    weight_matrix = create_weight_matrix(field.size(),[](float x){return pow(x,3);});
+    // weight_matrix = create_weight_matrix(field.size(),[](float x){return pow(x,3);});
+    weight_matrix = create_x2y2_weight_matrix(field.size());
+    print_matrix(weight_matrix);
     isFirstCall = false;
   }
   return  count_weighted_pair(field) - measure_distance(field);

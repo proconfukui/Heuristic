@@ -1,14 +1,22 @@
 #include <fstream>
 #include <iostream>
+#include <cstdlib>
 
 #include "json.hpp"
 
 using json = nlohmann::json;
 using namespace std;
 
-int main() {
+// コマンドライン引数は3つ
+// 1つ目の引数はjsonのパス,2つ目のパスは重みの情報が書いてあるファイルのパス
+// 3つ目はそのファイルの何行目を参照するか
+int main(int argc, char* argv[]) {
+  if(argc !=4){
+    cerr << "引数が足りません" << endl;
+  }
+
   // JSONファイル読み込み
-  ifstream ifs("input.json");
+  ifstream ifs(argv[1]);
   if (!ifs) {
     cerr << "JSONファイルが開けませんでした。" << endl;
     return 1;
@@ -44,6 +52,40 @@ int main() {
   } else {
     cout << "entities: 未定義" << endl;
   }
+
+  // 重みファイルから指定された行を読み取り
+  ifstream weight_file(argv[2]);
+  cout << argv[2] << endl;
+  if (!weight_file) {
+    cerr << "重みファイルが開けませんでした。" << endl;
+    return 1;
+  }
+
+  int target_line = atoi(argv[3]);
+  if (target_line <= 0) {
+    cerr << "行番号は1以上の整数を指定してください。" << endl;
+    return 1;
+  }
+
+  string line;
+  int current_line = 0;
+  bool found = false;
+  
+  while (getline(weight_file, line)) {
+    current_line++;
+    if (current_line == target_line) {
+      cout << line << endl;
+      found = true;
+      break;
+    }
+  }
+
+  if (!found) {
+    cerr << "指定された行が見つかりませんでした。" << endl;
+    return 1;
+  }
+
+  weight_file.close();
 
   return 0;
 }
