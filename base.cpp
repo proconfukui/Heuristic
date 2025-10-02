@@ -108,18 +108,18 @@ void print_matrix(const vector<vector<int>> &field)
 // テスト済
 void print_matrix(const vector<vector<float>> &field)
 {
-  cout << "     ";
+  cout << "            ";
   for (int i = 0; i < field.size(); i++)
   {
-    cout << setw(5) << i << "|";
+    cout << setw(12) << i << "|";
   }
   cout << endl;
   for (int y = 0; y < field.size(); y++)
   {
-    cout << setw(4) << y << "|";
+    cout << setw(11) << y << "|";
     for (int x = 0; x < field.size(); x++)
     {
-      cout << setw(5) << field[y][x] << " ";
+      cout << setw(12) << field[y][x] << " ";
     }
     cout << endl;
   }
