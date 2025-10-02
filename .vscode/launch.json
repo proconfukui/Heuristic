@@ -6,7 +6,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/bin/create_answer_json.exe",
-            "args": [],
+            "args": ["./testcase/answer.json","<","./testcase/answer.txt"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],

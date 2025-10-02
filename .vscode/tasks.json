@@ -8,6 +8,7 @@
             "args": [
                 "-g",
                 "create_answer_json.cpp",
+                "base.cpp",
                 "-o",
                 "./bin/create_answer_json.exe",
                 "-std=c++17"
