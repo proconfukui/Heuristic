@@ -34,16 +34,13 @@ int main(int argc, char* argv[]) {
     }
     
     // 各行をパース
-    vector<int> steps;
     vector<float> values;
     vector<float> pair_ratios;
     
-    // 1行目: ステップ数
+    // 1行目: ステップ数（データの個数）
+    int step_count;
     istringstream step_stream(lines[0]);
-    int step;
-    while (step_stream >> step) {
-        steps.push_back(step);
-    }
+    step_stream >> step_count;
     
     // 2行目: 評価値
     istringstream value_stream(lines[1]);
@@ -60,30 +57,36 @@ int main(int argc, char* argv[]) {
     }
     
     // データ数の確認
-    if (steps.size() != values.size() || values.size() != pair_ratios.size()) {
-        cerr << "データの数が一致しません" << endl;
-        cerr << "ステップ数: " << steps.size() << ", 評価値: " << values.size() << ", ペア割合: " << pair_ratios.size() << endl;
+    if (values.size() != pair_ratios.size()) {
+        cerr << "評価値とペア割合のデータ数が一致しません" << endl;
+        cerr << "評価値: " << values.size() << ", ペア割合: " << pair_ratios.size() << endl;
         return 1;
     }
     
-    // 評価値データを出力
+    if (static_cast<int>(values.size()) != step_count) {
+        cerr << "ステップ数とデータ数が一致しません" << endl;
+        cerr << "宣言されたステップ数: " << step_count << ", 実際のデータ数: " << values.size() << endl;
+        return 1;
+    }
+    
+    // 評価値データを出力（ステップ番号は1から開始）
     ofstream value_file("./testcase/analysis_value_data.txt");
-    for (size_t i = 0; i < steps.size(); i++) {
-        value_file << steps[i] << " " << values[i] << endl;
+    for (int i = 0; i < step_count; i++) {
+        value_file << (i + 1) << " " << values[i] << endl;
     }
     value_file.close();
     
-    // ペア割合データを出力
+    // ペア割合データを出力（ステップ番号は1から開始）
     ofstream pair_file("./testcase/analysis_pair_data.txt");
-    for (size_t i = 0; i < steps.size(); i++) {
-        pair_file << steps[i] << " " << pair_ratios[i] << endl;
+    for (int i = 0; i < step_count; i++) {
+        pair_file << (i + 1) << " " << pair_ratios[i] << endl;
     }
     pair_file.close();
     
     cout << "データ変換完了:" << endl;
     cout << "  評価値データ: ./testcase/analysis_value_data.txt" << endl;
     cout << "  ペア割合データ: ./testcase/analysis_pair_data.txt" << endl;
-    cout << "  データ点数: " << steps.size() << endl;
+    cout << "  データ点数: " << step_count << endl;
     
     return 0;
 }

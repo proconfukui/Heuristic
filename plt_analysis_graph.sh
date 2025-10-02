@@ -20,13 +20,13 @@ fi
 echo "=== Analysis Data Graph Generator ==="
 echo "入力ファイル: $ANALYSIS_FILE"
 
-# 1. データ変換プログラムをビルド
-echo "1. データ変換プログラムをビルド中..."
-g++ convert_analysis_data.cpp -o ./bin/convert_analysis_data.exe -std=c++17
-if [ $? -ne 0 ]; then
-    echo "エラー: データ変換プログラムのビルドに失敗しました"
-    exit 1
-fi
+# # 1. データ変換プログラムをビルド
+# echo "1. データ変換プログラムをビルド中..."
+# g++ convert_analysis_data.cpp -o ./bin/convert_analysis_data.exe -std=c++17
+# if [ $? -ne 0 ]; then
+#     echo "エラー: データ変換プログラムのビルドに失敗しました"
+#     exit 1
+# fi
 
 # 2. データを変換
 echo "2. データを変換中..."
