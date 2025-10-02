@@ -45,6 +45,28 @@ int main(int argc, char* argv[]) {
     }
   }
 
+  // フィールドのデータを読み飛ばす
+  int size;
+  if (std::getline(std::cin, line))
+  {
+    std::istringstream iss(line);
+    iss >> size;
+  }
+  for (int i = 0; i < size; i++) {
+    if (std::getline(std::cin, line))
+    {
+      // フィールドの行は使用しない（必要に応じて処理）
+    }
+  }
+
+  // 最終的なペア数を取得
+  int final_pair_count;
+  if (std::getline(std::cin, line))
+  {
+    std::istringstream iss(line);
+    iss >> final_pair_count;
+  }
+
   // JSONに変換して出力
   json j;
   for (int i = 0; i < ops_count; i++)
@@ -53,6 +75,7 @@ int main(int argc, char* argv[]) {
     j["ops"][i]["y"] = data[i].y;
     j["ops"][i]["n"] = data[i].n;
   }
+  j["pair_count"] = final_pair_count;
 
   std::ofstream ofs(argv[1]);
   ofs << j.dump(4) << std::endl;

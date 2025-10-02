@@ -244,6 +244,13 @@ void print_answer(int time, const vector<Operation> &ops, const vector<vector<in
     }
     cout << endl;
   }
+  // 末尾に最終的なペア数を出力
+  vector<vector<int>> field_to_rotate = field;
+  for (const auto &op : ops)
+  {
+    rotate(field_to_rotate,op);
+  }
+  cout << count_pair(field_to_rotate) << endl;
 }
 
 
