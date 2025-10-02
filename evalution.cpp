@@ -6,6 +6,7 @@
 using std::vector;
 using std::function;
 
+// 各座標の重み
 vector<vector<float>> weight_matrix;
 
 // ペア候補間の距離を測定する
