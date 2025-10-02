@@ -17,43 +17,65 @@ using std::vector;
 
 
 // 直接引数の2重配列を上書きする
-// テスト済
+// テスト済 - in-place回転で最適化
 void rotate(vector<vector<int>> &field, Operation op)
 {
-  vector<vector<int>> memo(op.n, vector<int>(op.n));
-  for (int dy = 0; dy < op.n; dy++)
+  // in-place回転: 外側から内側に向かって同心円状に回転
+  for (int layer = 0; layer < op.n / 2; layer++)
   {
-    for (int dx = 0; dx < op.n; dx++)
+    int first = layer;
+    int last = op.n - 1 - layer;
+    
+    for (int i = first; i < last; i++)
     {
-      memo[dy][dx] = field[op.y + op.n - 1 - dx][op.x + dy];
-    }
-  }
-  for (int dy = 0; dy < op.n; dy++)
-  {
-    for (int dx = 0; dx < op.n; dx++)
-    {
-      field[op.y + dy][op.x + dx] = memo[dy][dx];
+      int offset = i - first;
+      
+      // 4つの要素を一時保存して回転
+      int top = field[op.y + first][op.x + i];
+      
+      // left -> top
+      field[op.y + first][op.x + i] = field[op.y + last - offset][op.x + first];
+      
+      // bottom -> left  
+      field[op.y + last - offset][op.x + first] = field[op.y + last][op.x + last - offset];
+      
+      // right -> bottom
+      field[op.y + last][op.x + last - offset] = field[op.y + i][op.x + last];
+      
+      // top -> right
+      field[op.y + i][op.x + last] = top;
     }
   }
 }
 
 // 直接引数の2重配列を上書きする
-// テスト済
+// テスト済 - in-place反時計回りで最適化（rotateの逆操作を一回で実行）
 void unrotate(vector<vector<int>> &field, Operation op)
 {
-  vector<vector<int>> memo(op.n, vector<int>(op.n));
-  for (int dy = 0; dy < op.n; dy++)
+  // in-place反時計回り回転: 外側から内側に向かって同心円状に逆回転
+  for (int layer = 0; layer < op.n / 2; layer++)
   {
-    for (int dx = 0; dx < op.n; dx++)
+    int first = layer;
+    int last = op.n - 1 - layer;
+    
+    for (int i = first; i < last; i++)
     {
-      memo[dy][dx] = field[op.y + dx][op.x + op.n - 1 - dy];
-    }
-  }
-  for (int dy = 0; dy < op.n; dy++)
-  {
-    for (int dx = 0; dx < op.n; dx++)
-    {
-      field[op.y + dy][op.x + dx] = memo[dy][dx];
+      int offset = i - first;
+      
+      // 4つの要素を一時保存して反時計回りに回転
+      int top = field[op.y + first][op.x + i];
+      
+      // right -> top
+      field[op.y + first][op.x + i] = field[op.y + i][op.x + last];
+      
+      // bottom -> right
+      field[op.y + i][op.x + last] = field[op.y + last][op.x + last - offset];
+      
+      // left -> bottom
+      field[op.y + last][op.x + last - offset] = field[op.y + last - offset][op.x + first];
+      
+      // top -> left
+      field[op.y + last - offset][op.x + first] = top;
     }
   }
 }
