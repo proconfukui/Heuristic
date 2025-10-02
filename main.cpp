@@ -103,7 +103,7 @@ vector<Operation> beam_search(const vector<vector<int>>& field,vector<float> wei
   for (int time = 0; time < max_time; time++)
   {
     // 初期場面のノードを代入
-    nodes.emplace_back(tmp_field, vector<Operation>{}, evaluator(tmp_field,weights));
+    nodes.emplace_back(tmp_field, vector<Operation>{}, evaluator(tmp_field));
 
     for (int d = 0; d < depth; d++)
     {
@@ -113,7 +113,7 @@ vector<Operation> beam_search(const vector<vector<int>>& field,vector<float> wei
         for(const auto& op : candidates){
           vector<vector<int>> work_field = node.field;  // コピーを作成
           rotate(work_field,op);
-          float score = evaluator(work_field,weights);
+          float score = evaluator(work_field);
           vector<Operation> new_ops = node.ops;
           new_ops.push_back(op);
           next_nodes.emplace_back(std::move(work_field), std::move(new_ops), score);
