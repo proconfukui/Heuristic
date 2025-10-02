@@ -1,0 +1,20 @@
+# plt_analysis_combined_graph.gb
+# analysis_dataから評価値とペア割合を同時プロット
+
+set title "Analysis Data: Evaluation Value and Pair Ratio"
+set xlabel "Step"
+
+set terminal pngcairo size 1200,800
+set output "./picture/analysis_combined.png"
+
+set grid
+set key top right
+
+# 2つのy軸を使用
+set y2tics
+set ylabel "Evaluation Value" textcolor rgb "blue"
+set y2label "Pair Ratio" textcolor rgb "red"
+
+# 評価値（左軸、青）とペア割合（右軸、赤）を同時プロット
+plot "./testcase/analysis_value_data.txt" using 1:2 with linespoints axes x1y1 title "Evaluation Value" linecolor rgb "blue", \
+     "./testcase/analysis_pair_data.txt" using 1:2 with linespoints axes x1y2 title "Pair Ratio" linecolor rgb "red"

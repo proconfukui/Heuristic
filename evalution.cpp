@@ -6,8 +6,16 @@
 using std::vector;
 using std::function;
 
+
 // 各座標の重み
-vector<vector<float>> weight_matrix;
+vector<vector<float>> _weight_matrix;
+vector<float> _weights;
+
+// weights(評価関数の重みと、weight_matrixを初期化)
+void initialize_evalutor(const vector<vector<int>> &field,const vector<float>& weigths){
+  _weight_matrix = create_x2y2_weight_matrix(field.size());
+  _weights = weigths;
+}
 
 // ペア候補間の距離を測定する
 // テスト済
@@ -98,11 +106,11 @@ float count_weighted_pair(const vector<vector<int>> &field)
     {
       if (field[y][x] == field[y][x + 1])
       {
-        counter += weight_matrix[y][x] + weight_matrix[y][x + 1];
+        counter += _weight_matrix[y][x] + _weight_matrix[y][x + 1];
       }
       if (field[y][x] == field[y + 1][x])
       {
-        counter += weight_matrix[y][x] + weight_matrix[y + 1][x];
+        counter += _weight_matrix[y][x] + _weight_matrix[y + 1][x];
       }
     }
   }
@@ -110,12 +118,5 @@ float count_weighted_pair(const vector<vector<int>> &field)
 }
 
 float func1(const vector<vector<int>> &field){
-  static bool isFirstCall = true;
-  if (isFirstCall) {
-    // weight_matrix = create_weight_matrix(field.size(),[](float x){return pow(x,3);});
-    weight_matrix = create_x2y2_weight_matrix(field.size());
-    print_matrix(weight_matrix);
-    isFirstCall = false;
-  }
-  return  count_weighted_pair(field) - measure_distance(field);
+  return  _weights[0] * count_weighted_pair(field) -_weights[1]* measure_distance(field);
 }

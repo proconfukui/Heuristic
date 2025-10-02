@@ -1,0 +1,15 @@
+# plt_analysis_value_graph.gb
+# analysis_dataから評価関数の値をプロット
+
+set title "Evaluation Function Value per Step"
+set xlabel "Step"
+set ylabel "Evaluation Value"
+
+set terminal pngcairo size 800,600
+set output "./picture/analysis_value_per_step.png"
+
+set grid
+set key top right
+
+# analysis_data.txtの2行目（評価値）をプロット
+plot "./testcase/analysis_value_data.txt" using 1:2 with linespoints title "Evaluation Value"

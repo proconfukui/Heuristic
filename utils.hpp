@@ -1,8 +1,8 @@
 // utils.hpp
 #pragma once // ヘッダーの重複インクルードを防止
 #include <vector>
-#include<iostream>
-
+#include <iostream>
+#include <memory>
 
 using std::vector;
 
@@ -30,4 +30,14 @@ struct BeamNode {
     vector<vector<int>> field;
     vector<Operation> ops;
     float score;
+    
+    // デフォルトコンストラクタ
+    BeamNode() : score(0.0f) {}
+    
+    // コンストラクタ
+    BeamNode(const vector<vector<int>>& f, const vector<Operation>& o, float s)
+        : field(f), ops(o), score(s) {}
+    
+    BeamNode(vector<vector<int>>&& f, vector<Operation>&& o, float s)
+        : field(std::move(f)), ops(std::move(o)), score(s) {}
 };

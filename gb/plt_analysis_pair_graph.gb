@@ -1,0 +1,16 @@
+# plt_analysis_pair_graph.gb
+# analysis_dataからペア割合をプロット
+
+set title "Pair Ratio per Step"
+set xlabel "Step"
+set ylabel "Pair Ratio"
+
+set terminal pngcairo size 800,600
+set output "./picture/analysis_pair_per_step.png"
+
+set grid
+set key top right
+set yrange [0:1]
+
+# analysis_data.txtの3行目（ペア割合）をプロット
+plot "./testcase/analysis_pair_data.txt" using 1:2 with linespoints title "Pair Ratio"
