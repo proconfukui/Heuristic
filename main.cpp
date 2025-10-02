@@ -50,6 +50,9 @@ int main()
   // 解答用の配列
   vector<Operation> answer;
 
+  //weights_matrixのテスト用
+  // func1(field);
+
   // 処理の本体。時間を計測する
   // auto begin_time = std::chrono::high_resolution_clock::now();
   
