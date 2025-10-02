@@ -7,7 +7,6 @@
             "command": "g++",
             "args": [
                 "-g",
-                "-pg",
                 "create_answer_json.cpp",
                 "-o",
                 "./bin/create_answer_json.exe",

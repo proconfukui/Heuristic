@@ -14,6 +14,7 @@ using namespace std;
 int main(int argc, char* argv[]) {
   if(argc !=4){
     cerr << "引数が足りません" << endl;
+    return 1;
   }
 
   // JSONファイル読み込み
