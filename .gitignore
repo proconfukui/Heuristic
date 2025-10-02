@@ -2,3 +2,4 @@ gmon.out
 analysis.txt
 bin/
 generate
+.github/copilot-instructions.md
