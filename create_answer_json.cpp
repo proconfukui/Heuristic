@@ -6,80 +6,63 @@
 #include "json.hpp"
 #include "utils.hpp"
 
+using namespace std;
 using json = nlohmann::ordered_json;
 
-// コマンドライン引数は1つ。この引数で指定したパスにjsonファイルを出力する
-int main(int argc, char* argv[]) {
-  if (argc != 2){
-    std::cerr << "引数が足りません" << std::endl;
+// コマンドライン引数で指定したパスにjsonファイルを出力する
+int main(int argc, char *argv[])
+{
+  if (argc != 2)
+  {
+    cerr << "引数が足りません" << endl;
     return 1;
   }
 
-  std::vector<Operation> data;
+  int answer_count;
+  cin >> answer_count;
 
-  // 標準入力から読み取り
-  std::string line;
-  
-  // 1行目をスキップ
-  if (std::getline(std::cin, line)) {
-    // 1行目は使用しない（必要に応じて処理）
-  }
-  
-  // 2行目からops数を読み取り
-  int ops_count = 0;
-  if (std::getline(std::cin, line)) {
-    std::istringstream iss(line);
-    iss >> ops_count;
-  }
-  
-  // 指定された数だけOperationデータを読み取り
-  for (int i = 0; i < ops_count; i++) {
-    if (std::getline(std::cin, line)) {
-      std::istringstream iss(line);
-      int x, y, n;
-      
-      if (iss >> n >> x >> y) {
-        Operation op = {x,y,n};
-        data.push_back(op);
-      }
-    }
-  }
-
-  // フィールドのデータを読み飛ばす
-  int size;
-  if (std::getline(std::cin, line))
+  vector<int> pair_count(answer_count);
+  vector<vector<Operation>> ops_data(answer_count);
+  for (int answer_index = 0; answer_index < answer_count; answer_index++)
   {
-    std::istringstream iss(line);
-    iss >> size;
-  }
-  for (int i = 0; i < size; i++) {
-    if (std::getline(std::cin, line))
+    int ops_count;
+    cin >> pair_count[answer_index] >> ops_count;
+
+    ops_data[answer_index] = vector<Operation>(ops_count);
+    for (int ops_index = 0; ops_index < ops_count; ops_index++)
     {
-      // フィールドの行は使用しない（必要に応じて処理）
+      int n, x, y;
+      cin >> n >> x >> y;
+      Operation op = {x, y, n};
+      ops_data[answer_index][ops_index] = op;
     }
   }
 
-  // 最終的なペア数を取得
-  int final_pair_count;
-  if (std::getline(std::cin, line))
+  // 複数の解がある場合は、その中から最も良いものを選ぶ
+  int best_answer_index = 0;
+  for (int index = 1; index < answer_count; index++)
   {
-    std::istringstream iss(line);
-    iss >> final_pair_count;
+    if (pair_count[index] > pair_count[best_answer_index])
+    {
+      best_answer_index = index;
+    }
+    else if (pair_count[index] == pair_count[best_answer_index] && ops_data[index].size() < ops_data[best_answer_index].size())
+    {
+      best_answer_index = index;
+    }
   }
 
   // JSONに変換して出力
   json j;
-  for (int i = 0; i < ops_count; i++)
+  for (int ops_index = 0; ops_index < ops_data[best_answer_index].size(); ops_index++)
   {
-    j["ops"][i]["x"] = data[i].x;
-    j["ops"][i]["y"] = data[i].y;
-    j["ops"][i]["n"] = data[i].n;
+    j["ops"][ops_index]["x"] = ops_data[best_answer_index][ops_index].x;
+    j["ops"][ops_index]["y"] = ops_data[best_answer_index][ops_index].y;
+    j["ops"][ops_index]["n"] = ops_data[best_answer_index][ops_index].n;
   }
-  j["pair_count"] = final_pair_count;
+  j["pair_count"] = pair_count[best_answer_index];
 
-  std::ofstream ofs(argv[1]);
-  ofs << j.dump(4) << std::endl;
+  ofstream ofs(argv[1]);
+  ofs << j.dump(4) << endl;
   ofs.close();
-
-  return 0;
 }
