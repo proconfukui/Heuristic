@@ -1,5 +1,8 @@
 #!/bin/zsh
 
+# 試合での運用時は、次のコマンドを使うこと：
+# ./main.sh | ./bin/create_answer_json.exe testcase/answer.json
+
 CORE_NUM=$(sysctl -n hw.ncpu)
 
 # main.exeをコアごとに実行し、一時ファイルに出力
