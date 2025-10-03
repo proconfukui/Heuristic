@@ -8,8 +8,8 @@
 #include <set>
 #include <fstream>
 #include "utils.hpp"
-#include "base.cpp"
-#include "evalution.cpp"
+#include "base.hpp"
+#include "evalution.hpp"
 #include "steps_table.hpp"
 #include "json.hpp"
 

@@ -1,10 +1,13 @@
 #include "evalution.hpp"
 #include <vector>
 #include <functional>
+#include <iostream>
 #include "base.hpp"
 
 using std::vector;
 using std::function;
+using std::cerr;
+using std::endl;
 
 // 各座標の重み
 vector<vector<float>> _weight_matrix;
@@ -13,8 +16,8 @@ vector<float> _weights;
 // weights(評価関数の重みと、weight_matrixを初期化)
 void initialize_evalutor(const vector<vector<int>> &field,const vector<float>& weigths){
   _weights = weigths;
-  _weight_matrix = add_matrix(create_x2y2_weight_matrix(field.size()),create_weight_matrix(field.size(),[](int x){return pow(x,2);}));
-  _weight_matrix = product_matrix(_weight_matrix,weigths[0]); 
+  _weight_matrix = add_matrix(create_x2y2_weight_matrix(field.size()),create_weight_matrix(field.size(),[](float x){return pow(x,2);}));
+  _weight_matrix = product_matrix(_weight_matrix,weigths[1]); 
 }
 
 
@@ -117,6 +120,7 @@ vector<vector<float>> add_matrix(const vector<vector<float>>& matrix1,const vect
       matrix[y][x] = matrix1[y][x] + matrix2[y][x]; 
     }
   }
+  print_matrix(matrix);
   return matrix;
 }
 
@@ -161,5 +165,9 @@ float count_weighted_pair(const vector<vector<int>> &field)
 }
 
 float func1(const vector<vector<int>> &field){
-  return  count_pair,count_weighted_pair(field) -_weights[2]* measure_distance(field);
+  float term1 = count_pair(field)*_weights[0];
+  float term2 = count_weighted_pair(field);
+  float term3 = measure_distance(field);
+  cerr << term1 <<" "<< term2 <<" "<< term3 << endl;
+  return  term1 + term2 - term3;
 }
