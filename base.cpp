@@ -14,8 +14,6 @@ using std::rand;
 using std::setw;
 using std::vector;
 
-
-
 // 直接引数の2重配列を上書きする
 // テスト済 - in-place回転で最適化
 void rotate(vector<vector<int>> &field, Operation op)

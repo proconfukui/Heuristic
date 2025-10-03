@@ -55,7 +55,7 @@ int measure_distance(const vector<vector<int>> &field)
 
 vector<vector<float>> product_matrix(const vector<vector<float>>& field,float term){
   int size = field.size();
-  vector<vector<float>> matrix = vector<vector<float>>(size, vector<float>(size, 0));
+  vector<vector<float>> matrix = field;
   for (int y = 0; y < size; y++) {
     for (int x = 0; x < size; x++) {
       matrix[y][x] *= term; 
@@ -147,21 +147,21 @@ vector<vector<float>> create_x2y2_weight_matrix(int size){
 float count_weighted_pair(const vector<vector<int>> &field)
 {
   float counter = 0;
-  for (int y = 0; y < field.size() - 1; y++)
-  {
-    for (int x = 0; x < field.size() - 1; x++)
-    {
-      if (field[y][x] == field[y][x + 1])
-      {
-        counter += _weight_matrix[y][x] + _weight_matrix[y][x + 1];
-      }
-      if (field[y][x] == field[y + 1][x])
-      {
-        counter += _weight_matrix[y][x] + _weight_matrix[y + 1][x];
-      }
+    for (int y = 0; y < field.size(); y++) {
+        for (int x = 0; x < field.size() -1 ; x++) {
+            if(field[y][x] == field[y][x+1]){
+                counter += _weight_matrix[y][x] + _weight_matrix[y][x+1];
+            } 
+        }
     }
-  }
-  return counter;
+    for (int y = 0; y < field.size()-1; y++) {
+        for (int x = 0; x < field.size(); x++) {
+            if(field[y][x] == field[y+1][x]){
+                counter += _weight_matrix[y][x] + _weight_matrix[y+1][x];
+            } 
+        }
+    }
+    return counter;
 }
 
 float func1(const vector<vector<int>> &field){
