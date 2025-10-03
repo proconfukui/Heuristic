@@ -6,16 +6,18 @@
 using std::vector;
 using std::function;
 
-
 // 各座標の重み
 vector<vector<float>> _weight_matrix;
 vector<float> _weights;
 
 // weights(評価関数の重みと、weight_matrixを初期化)
 void initialize_evalutor(const vector<vector<int>> &field,const vector<float>& weigths){
-  _weight_matrix = create_x2y2_weight_matrix(field.size());
   _weights = weigths;
+  _weight_matrix = add_matrix(create_x2y2_weight_matrix(field.size()),create_weight_matrix(field.size(),[](int x){return pow(x,2);}));
+  _weight_matrix = product_matrix(_weight_matrix,weigths[0]); 
 }
+
+
 
 // ペア候補間の距離を測定する
 // テスト済
@@ -48,12 +50,27 @@ int measure_distance(const vector<vector<int>> &field)
   return total_dist;
 }
 
+vector<vector<float>> product_matrix(const vector<vector<float>>& field,float term){
+  int size = field.size();
+  vector<vector<float>> matrix = vector<vector<float>>(size, vector<float>(size, 0));
+  for (int y = 0; y < size; y++) {
+    for (int x = 0; x < size; x++) {
+      matrix[y][x] *= term; 
+    }
+  }
+  return matrix;
+}
+
 // ある関数を与えることにより、その関数をZ軸を中心に回転させたときの、(X,Y)のZの大きさが格納された大きさsizeの二重配列を返す
+// 最大値が1になるように標準化される
 // テスト済
 vector<vector<float>> create_weight_matrix(int size, function<float(float)> func)
 {
   int center = size/2;
   vector<vector<float>> matrix = vector<vector<float>>(size, vector<float>(size, 0));
+  float max_value = 0.0f;
+  
+  // まず、すべての値を計算
   for (int y = 0; y < size; y++)
   {
     for (int x = 0; x < size; x++)
@@ -72,10 +89,37 @@ vector<vector<float>> create_weight_matrix(int size, function<float(float)> func
       }
       float distance = pow(pow(x_dis, 2) + pow(y_dis, 2), 0.5);
       matrix[y][x] = func(distance);
+      
+      // 最大値を追跡
+      if (matrix[y][x] > max_value) {
+        max_value = matrix[y][x];
+      }
+    }
+  }
+  
+  // 最大値で標準化（最大値が0でない場合のみ）
+  if (max_value > 0.0f) {
+    for (int y = 0; y < size; y++) {
+      for (int x = 0; x < size; x++) {
+        matrix[y][x] /= max_value;
+      }
+    }
+  }
+  
+  return matrix;
+}
+
+vector<vector<float>> add_matrix(const vector<vector<float>>& matrix1,const vector<vector<float>>& matrix2){
+  int size = matrix1.size();
+  vector<vector<float>> matrix = vector<vector<float>>(size, vector<float>(size, 0));
+  for (int y = 0; y < size; y++) {
+    for (int x = 0; x < size; x++) {
+      matrix[y][x] = matrix1[y][x] + matrix2[y][x]; 
     }
   }
   return matrix;
 }
+
 
 // z = (xy)^2の分布に基づいた重みの二重配列を返す
 vector<vector<float>> create_x2y2_weight_matrix(int size){
@@ -92,7 +136,6 @@ vector<vector<float>> create_x2y2_weight_matrix(int size){
       matrix[y][x] = z;
     }
   }
-  
   return matrix;
 }
 
@@ -118,5 +161,5 @@ float count_weighted_pair(const vector<vector<int>> &field)
 }
 
 float func1(const vector<vector<int>> &field){
-  return  _weights[0] * count_weighted_pair(field) -_weights[1]* measure_distance(field);
+  return  count_pair,count_weighted_pair(field) -_weights[2]* measure_distance(field);
 }

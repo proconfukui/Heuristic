@@ -15,3 +15,5 @@ vector<vector<float>> create_weight_matrix(int size, function<float(float)> func
 float count_weighted_pair(const vector<vector<int>> &field);
 float func1(const vector<vector<int>> &field);
 vector<vector<float>> create_x2y2_weight_matrix(int size);
+vector<vector<float>> add_matrix(const vector<vector<float>>& matrix1,const vector<vector<float>>& matrix2);
+vector<vector<float>> product_matrix(const vector<vector<float>>& field,float term);

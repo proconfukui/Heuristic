@@ -25,6 +25,6 @@ echo "3. 分析データ生成..."
 ./bin/print_analysis.exe "$WEIGHTS_FILE" "$WEIGHT_LINE" < ./testcase/answer.txt > ./testcase/analysis_data.txt
 
 echo "4. グラフ生成..."
-./plt_analysis_graph.sh ./testcase/analysis_data.txt
+./plt_analysis_graph.sh ./testcase/analysis_data.txt "$WIEGHT_LINE"
 
 echo "=== 完了 ==="
