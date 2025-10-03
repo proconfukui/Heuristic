@@ -82,8 +82,6 @@
             "command": "g++",
             "args": [
                 "main.cpp",
-                "base.cpp",
-                "evalution.cpp",
                 "-o",
                 "./bin/main.exe",
                 "-g",
