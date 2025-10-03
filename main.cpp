@@ -15,6 +15,7 @@
 
 using std::cin;
 using std::cout;
+using std::cerr;
 using std::endl;
 using std::function;
 using std::pair;
@@ -31,7 +32,7 @@ using std::string;
 
 void initialize(int &start_time, vector<vector<int>> &field, vector<float> &weights);
 void print_answer(int time, const vector<Operation> &ops, const vector<vector<int>> &field);
-vector<Operation> beam_search(const vector<vector<int>>& field,vector<float> weights, int depth, int width, int commit_step,int num_sample,const function<float(vector<vector<int>> &)> &evaluator);
+vector<Operation> beam_search(const vector<vector<int>>& field,vector<float> weights, int depth, int width, int commit_step,int num_sample,int max_step,const function<float(vector<vector<int>> &)> &evaluator);
 vector<Operation> best_operations_random(const vector<vector<int>>& field,int num_sample,int width,const function<float(vector<vector<int>>&)> &evaluator);
 // void export_answer(const string& filename, vector<Operation> ops);
 
@@ -56,13 +57,13 @@ int main()
   // func1(field);
 
   // 処理の本体。時間を計測する
-  // auto begin_time = std::chrono::high_resolution_clock::now();
+  auto begin_time = std::chrono::high_resolution_clock::now();
   
-  answer = beam_search(field,weights,10,20,7,100,func1);
+  answer = beam_search(field,weights,10,20,7,100,100,func1);
 
-  // auto end_time = std::chrono::high_resolution_clock::now();
-  // auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - begin_time);
-  // cout << "exe_time: " << duration.count() << " ms" << endl;
+  auto end_time = std::chrono::high_resolution_clock::now();
+  auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - begin_time);
+  cerr << "exe_time: " << duration.count() << " ms" << endl;
 
 
 
@@ -80,7 +81,7 @@ int main()
 }
 
 // ビームサーチ（最適化版 - moveセマンティクス使用）
-vector<Operation> beam_search(const vector<vector<int>>& field,vector<float> weights, int depth, int width, int commit_step,int num_sample,const function<float(vector<vector<int>> &)> &evaluator)
+vector<Operation> beam_search(const vector<vector<int>>& field,vector<float> weights, int depth, int width, int commit_step,int num_sample,int max_step,const function<float(vector<vector<int>> &)> &evaluator)
 {
   vector<vector<int>> tmp_field = field;
 
@@ -99,9 +100,13 @@ vector<Operation> beam_search(const vector<vector<int>>& field,vector<float> wei
   next_nodes.reserve(depth * num_sample);
 
   // max_time回操作した時点で強制終了
-  int max_time = 100;
-  for (int time = 0; time < max_time; time++)
+  for (int time = 0; time < max_step/commit_step; time++)
   {
+    // commit_step回のステップにどれほど時間がかかるかを計測
+    cerr << "time :" << time <<endl;
+    auto begin_time = std::chrono::high_resolution_clock::now();
+
+
     // 初期場面のノードを代入
     nodes.emplace_back(tmp_field, vector<Operation>{}, evaluator(tmp_field));
 
@@ -144,6 +149,12 @@ vector<Operation> beam_search(const vector<vector<int>>& field,vector<float> wei
     }
 
     nodes.clear();
+
+    // commit_step回のステップにどれほど時間がかかるかを計測
+    auto end_time = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - begin_time);
+    cerr << "exe_time: " << duration.count() << " ms" << endl;
+    // timelocal.push_back(duration.count());
   }
   return answer;
 }

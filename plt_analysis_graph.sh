@@ -36,10 +36,26 @@ if [ -f "$WEIGHTS_FILE" ]; then
     fi
     
     WEIGHT_LINE=$(sed -n "${WEIGHT_LINE_NUM}p" "$WEIGHTS_FILE")
-    WEIGHT1=$(echo "$WEIGHT_LINE" | awk '{print $1}')
-    WEIGHT2=$(echo "$WEIGHT_LINE" | awk '{print $2}')
-    WEIGHT_SUFFIX="_w${WEIGHT1}_${WEIGHT2}_line${WEIGHT_LINE_NUM}"
-    echo "重み情報 (${WEIGHT_LINE_NUM}行目): $WEIGHT1, $WEIGHT2"
+    
+    # 重みの数を動的に取得し、すべての重みをファイル名に含める
+    WEIGHTS_ARRAY=($WEIGHT_LINE)  # スペース区切りで配列に変換
+    WEIGHT_COUNT=${#WEIGHTS_ARRAY[@]}
+    
+    # 重み情報を文字列として構築
+    WEIGHT_INFO=""
+    WEIGHT_SUFFIX_PARTS=""
+    for i in "${!WEIGHTS_ARRAY[@]}"; do
+        if [ $i -eq 0 ]; then
+            WEIGHT_INFO="${WEIGHTS_ARRAY[$i]}"
+            WEIGHT_SUFFIX_PARTS="w${WEIGHTS_ARRAY[$i]}"
+        else
+            WEIGHT_INFO="${WEIGHT_INFO}, ${WEIGHTS_ARRAY[$i]}"
+            WEIGHT_SUFFIX_PARTS="${WEIGHT_SUFFIX_PARTS}_${WEIGHTS_ARRAY[$i]}"
+        fi
+    done
+    
+    WEIGHT_SUFFIX="_${WEIGHT_SUFFIX_PARTS}_line${WEIGHT_LINE_NUM}"
+    echo "重み情報 (${WEIGHT_LINE_NUM}行目, ${WEIGHT_COUNT}個): $WEIGHT_INFO"
 else
     echo "警告: weights.txtが見つかりません。重み情報なしでグラフを生成します。"
 fi

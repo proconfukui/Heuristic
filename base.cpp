@@ -7,7 +7,7 @@
 #include "base.hpp"
 
 using std::cin;
-using std::cout;
+using std::cerr;
 using std::endl;
 using std::function;
 using std::rand;
@@ -107,22 +107,22 @@ int count_pair(const vector<vector<int>>& field){
 // テスト済
 void print_matrix(const vector<vector<int>> &field)
 {
-  cout << "   ";
+  cerr << "   ";
   for (int i = 0; i < field.size(); i++)
   {
-    cout << setw(3) << i << "|";
+    cerr << setw(3) << i << "|";
   }
-  cout << endl;
+  cerr << endl;
   for (int y = 0; y < field.size(); y++)
   {
-    cout << setw(2) << y << "|";
+    cerr << setw(2) << y << "|";
     for (int x = 0; x < field.size(); x++)
     {
-      cout << setw(3) << field[y][x] << " ";
+      cerr << setw(3) << field[y][x] << " ";
     }
-    cout << endl;
+    cerr << endl;
   }
-  cout << endl;
+  cerr << endl;
 }
 
 
@@ -130,22 +130,22 @@ void print_matrix(const vector<vector<int>> &field)
 // テスト済
 void print_matrix(const vector<vector<float>> &field)
 {
-  cout << "            ";
+  cerr << "            ";
   for (int i = 0; i < field.size(); i++)
   {
-    cout << setw(12) << i << "|";
+    cerr << setw(12) << i << "|";
   }
-  cout << endl;
+  cerr << endl;
   for (int y = 0; y < field.size(); y++)
   {
-    cout << setw(11) << y << "|";
+    cerr << setw(11) << y << "|";
     for (int x = 0; x < field.size(); x++)
     {
-      cout << setw(12) << field[y][x] << " ";
+      cerr << setw(12) << field[y][x] << " ";
     }
-    cout << endl;
+    cerr << endl;
   }
-  cout << endl;
+  cerr << endl;
 }
 
 
