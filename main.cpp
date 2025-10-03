@@ -7,8 +7,6 @@
 #include <chrono>
 #include <set>
 #include <fstream>
-#include <thread>
-#include <mutex>
 #include "utils.hpp"
 #include "base.hpp"
 #include "evalution.hpp"
@@ -123,39 +121,17 @@ vector<Operation> beam_search(const vector<vector<int>>& field, int depth, int w
     for (int d = 0; d < depth; d++)
     {
       // next_nodeに新しい生成されるnodeを作る
-      std::mutex mtx;
-      size_t num_threads = std::thread::hardware_concurrency();
-      if (num_threads == 0)
-        num_threads = 4; // デフォルト
-
-      size_t chunk_size = (nodes.size() + num_threads - 1) / num_threads;
-      std::vector<std::thread> threads;
-
-      for (size_t t = 0; t < num_threads; ++t)
-      {
-        threads.emplace_back([&, t]()
-                             {
-        size_t begin = t * chunk_size;
-        size_t end = std::min(nodes.size(), begin + chunk_size);
-        std::vector<BeamNode> local_next_nodes;
-        for (size_t i = begin; i < end; ++i) {
-            auto& node = nodes[i];
-            auto candidates = best_operations_random(node.field, num_sample, width, evaluator);
-            for (const auto& op : candidates) {
-                rotate(node.field, op);
-                float score = evaluator(node.field);
-                auto tmp_ops = node.ops;
-                tmp_ops.push_back(op);
-                local_next_nodes.push_back({node.field, tmp_ops, score});
-                unrotate(node.field, op);
-            }
+      for(auto& node : nodes){
+        candidates = best_operations_random(node.field,num_sample,width,evaluator);
+        for(const auto& op : candidates){
+          rotate(node.field,op);
+          float score = evaluator(node.field);
+          tmp_ops = node.ops;
+          tmp_ops.push_back(op);
+          next_nodes.push_back({node.field,tmp_ops,score});
+          unrotate(node.field,op);
         }
-        // 排他的にnext_nodesへ追加
-        std::lock_guard<std::mutex> lock(mtx);
-        next_nodes.insert(next_nodes.end(), local_next_nodes.begin(), local_next_nodes.end()); });
       }
-      for (auto &th : threads)
-        th.join();
 
       // next_nodeから評価値の高いwidth個のnodeを抽出
       sort(next_nodes.begin(), next_nodes.end(), [](const BeamNode& a, const BeamNode& b) {
