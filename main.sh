@@ -2,6 +2,7 @@
 
 # 試合での運用時は、次のコマンドを使うこと：
 # ./main.sh | ./bin/create_answer_json.exe testcase/answer.json
+# cat output_*.txtで出てきた複数の標準出力の中から最も好ましい解をcreate_answer.jsonで出力する。
 
 CORE_NUM=$(sysctl -n hw.ncpu)
 
