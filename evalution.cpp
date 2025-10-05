@@ -26,29 +26,29 @@ void initialize_evalutor(const vector<vector<int>> &field,const vector<float>& w
 // テスト済
 int measure_distance(const vector<vector<int>> &field)
 {
-  int max_pair_number = field.size() * field.size() / 2;
-  vector<vector<int>> pair_coordinates = vector<vector<int>>(max_pair_number, vector<int>(4, -1));
-  for (int y = 0; y < field.size(); y++)
-  {
-    for (int x = 0; x < field.size(); x++)
-    {
+  const int size = field.size();
+  const int max_pair_number = size * size / 2;
+  // x1,y1,x2,y2 を一列の配列で管理（-1 初期化）。reserve/clear コスト回避。
+  vector<int> coords(max_pair_number * 4, -1);
+  for (int y = 0; y < size; y++) {
+    for (int x = 0; x < size; x++) {
       int number = field[y][x];
-      if (pair_coordinates[number][0] == -1)
-      {
-        pair_coordinates[number][0] = x;
-        pair_coordinates[number][1] = y;
-      }
-      else
-      {
-        pair_coordinates[number][2] = x;
-        pair_coordinates[number][3] = y;
+      int idx = number * 4;
+      if (coords[idx] == -1) {
+        coords[idx] = x;     // x1
+        coords[idx + 1] = y; // y1
+      } else {
+        coords[idx + 2] = x;     // x2
+        coords[idx + 3] = y;     // y2
       }
     }
   }
   int total_dist = 0;
-  for (int i = 0; i < max_pair_number; i++)
-  {
-    total_dist += pow(pair_coordinates[i][0] - pair_coordinates[i][2], 2) + pow(pair_coordinates[i][1] - pair_coordinates[i][3], 2);
+  for (int i = 0; i < max_pair_number; i++) {
+    int idx = i * 4;
+    int dx = coords[idx] - coords[idx + 2];
+    int dy = coords[idx + 1] - coords[idx + 3];
+    total_dist += dx * dx + dy * dy; // pow を避ける
   }
   return total_dist;
 }
@@ -168,6 +168,6 @@ float func1(const vector<vector<int>> &field){
   float term1 = count_pair(field)*_weights[0];
   float term2 = count_weighted_pair(field);
   float term3 = measure_distance(field);
-  cerr << term1 <<" "<< term2 <<" "<< term3 << endl;
+  // cerr << term1 <<" "<< term2 <<" "<< term3 << endl;
   return  term1 + term2 - term3;
 }

@@ -41,3 +41,16 @@ struct BeamNode {
     BeamNode(vector<vector<int>>&& f, vector<Operation>&& o, float s)
         : field(std::move(f)), ops(std::move(o)), score(s) {}
 };
+
+struct State {
+    vector<vector<int>> field;
+    vector<Operation> ops;
+    float g; // 実際にかかった手数
+    float h; // 予想距離
+    float f; // g + h
+
+    // 比較演算子（priority_queue用、fが小さい順）
+    bool operator<(const State& other) const {
+        return f > other.f;
+    }
+};

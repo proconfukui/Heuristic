@@ -147,8 +147,8 @@ void print_matrix(const vector<vector<float>> &field)
 }
 
 
-// 二次元配列のハッシュ値を計算するための関数
-unsigned long calculate_hash(vector<vector<int>> field){
+// 二次元配列のハッシュ値を計算するための関数（参照渡しでコピー回避）
+unsigned long hash_field(const vector<vector<int>>& field){
   int HASH_BASE = 41;
     unsigned long current_hash = 0;
     for(const auto& row : field){

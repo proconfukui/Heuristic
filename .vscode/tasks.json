@@ -8,6 +8,7 @@
             "args": [
                 "-g",
                 "create_answer_json.cpp",
+                "base.cpp",
                 "-o",
                 "./bin/create_answer_json.exe",
                 "-std=c++17"
@@ -62,6 +63,7 @@
                 "-o",
                 "./bin/main.exe",
                 "-g",
+                "-O3",
                 "-std=c++17"
             ],
             "group": "build",
