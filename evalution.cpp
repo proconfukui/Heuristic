@@ -189,14 +189,14 @@ float func2(const vector<vector<int>> &field){
 float func3(const vector<vector<int>> &field){
   float term1 = count_pair(field)*_weights[0];
   float term2 = measure_distance(field)*_weights[1];
-    // cerr << term1 <<" "<< term2<< endl;
+  // cerr << term1 <<" "<< term2<< endl;
   return  term1 - term2;
 }
 
 
 float func4(const vector<vector<int>> &field){
   float term1 = count_pair(field)*_weights[0];
-  float term2 = measure_distance(field);
+  float term2 = measure_distance(field)*_weights[1];
   // cerr << term1 <<" "<< term2<<endl;
-  return  term1 + term2;
+  return  term1 - term2;
 }

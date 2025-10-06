@@ -2,7 +2,7 @@ const int EMPTY_VALUE = -1;
 
 // フィールドの大きさに対し、
 // そのフィールドで取りうる手の数が対応している
-int steps_table[24]={
+int steps_table[25] = {
     EMPTY_VALUE,
     EMPTY_VALUE,
     EMPTY_VALUE,
@@ -12,6 +12,8 @@ int steps_table[24]={
     55,
     EMPTY_VALUE,
     140,
+    EMPTY_VALUE,
+    285,
     EMPTY_VALUE,
     506,
     EMPTY_VALUE,

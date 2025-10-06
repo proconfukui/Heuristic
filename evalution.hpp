@@ -13,7 +13,7 @@ extern vector<float> _weights;
 void initialize_evalutor(const vector<vector<int>> &field,const vector<float>& weigths);
 int measure_distance(const vector<vector<int>>& field);
 vector<vector<float>> create_weight_matrix(int size, function<float(float)> func);
-float count_weighted_pair(const vector<vector<int>> &field,const vector<vector<int>> & weight_matrix);
+float count_weighted_pair(const vector<vector<int>> &field,const vector<vector<float>> & weight_matrix);
 float func1(const vector<vector<int>> &field);
 float func2(const vector<vector<int>> &field);
 float func3(const vector<vector<int>> &field);
