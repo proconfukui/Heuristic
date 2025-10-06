@@ -74,14 +74,14 @@ int main()
   vector<Operation> answer2 = beam_search(field, weights, 200, 30, 4, 200, 0.8,100,func2);
   apply_ops(field,answer2);
 
-  // vector<Operation> answer3 = beam_search(field, weights, 200, 40, 4, 300, 0.80,100,func3);
-  // apply_ops(field,answer3);
+  vector<Operation> answer3 = beam_search(field, weights, 200, 40, 4, 300, 0.80,100,func3);
+  apply_ops(field,answer3);
 
-  // vector<Operation> answer4 = beam_search(field, weights, 200, 30, 1, 500, 1.0,30,func4);
+  vector<Operation> answer4 = beam_search(field, weights, 200, 30, 1, 500, 1.0,30,func4);
 
   answer1.insert(answer1.end(),answer2.begin(),answer2.end());
-  // answer1.insert(answer1.end(),answer3.begin(),answer3.end());
-  // answer1.insert(answer1.end(),answer4.begin(),answer4.end());
+  answer1.insert(answer1.end(),answer3.begin(),answer3.end());
+  answer1.insert(answer1.end(),answer4.begin(),answer4.end());
 
   auto end_time = std::chrono::high_resolution_clock::now();
   auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - begin_time);
