@@ -1,14 +1,18 @@
 #!/bin/zsh
 
-# 試合での運用時は、次のコマンドを使うこと：
-# ./main.sh | ./bin/create_answer_json.exe testcase/answer.json
+# 使い方：
+# ./main.sh 問題ファイルのパス 重みファイルのパス 使用する重みの開始行　メイン実行ファイルのパス
+# 「使用する重みの開始行」から「PCのコア数」行分の重みを、コアごとに割り当てる。
+
+# 試合でのコマンド使用例：
+# ./main.sh testcase/problem.json testcase/weights.txt 1 ./bin/main.exe | ./bin/create_answer_json.exe testcase/answer.json
 # cat output_*.txtで出てきた複数の標準出力の中から最も好ましい解をcreate_answer.jsonで出力する。
 
 CORE_NUM=$(sysctl -n hw.ncpu)
 
 # main.exeをコアごとに実行し、一時ファイルに出力
 for i in {1..$CORE_NUM}; do
-  ./bin/input_problem.exe testcase/problem.json testcase/weights.txt $i | ./bin/main.exe > output_$i.txt &
+  ./bin/input_problem.exe $1 $2 $((i+$3-1)) | $4 > output_$i.txt &
 done
 
 wait
