@@ -35,7 +35,7 @@ using std::vector;
 
 void initialize(int &start_time, vector<vector<int>> &field, vector<float> &weights);
 void print_answer(int time, const vector<Operation> &ops, const vector<vector<int>> &field);
-vector<Operation> beam_search(const vector<vector<int>> &field, vector<float> weights, int depth, int width, int commit_step, int num_sample, float tarm_ratio, const function<float(vector<vector<int>> &)> &evaluator);
+vector<Operation> beam_search(const vector<vector<int>> &field, vector<float> weights, int depth, int width, int commit_step, int num_sample, float tarm_ratio,int max_time, const function<float(vector<vector<int>> &)> &evaluator);
 vector<Operation> best_operations_random(const vector<vector<int>> &field, int num_sample, int width, const function<float(vector<vector<int>> &)> &evaluator);
 vector<Operation> a_star(vector<vector<int>> field,const function<float(vector<vector<int>> &)> &evaluator);
 
@@ -55,34 +55,33 @@ int main()
 
   // weights_matrixのテスト用
   //  func1(field);
+  cerr << measure_distance(field) << endl;
 
   // 処理の本体。時間を計測する
   auto begin_time = std::chrono::high_resolution_clock::now();
 
+
+  float max_pair_num = field.size()*field.size()/2 +0.0;
   // ビームサーチによる探索
+  // 処理時間は幅に比例
   vector<Operation> answer;
 
-  vector<Operation> answer1 = beam_search(field, weights, 20, 20, 7, 100, 0.30, func1);
+  // 4隅にペアを揃える
+  vector<Operation> answer1 = beam_search(field, weights, 200, 20, 4, 200, 0.20, 100,func1);
+  apply_ops(field,answer1);
 
-  for(const auto& op : answer1){
-    rotate(field,op);
-  }
+  //端からペアを揃える
+  vector<Operation> answer2 = beam_search(field, weights, 200, 30, 4, 200, 0.8,100,func2);
+  apply_ops(field,answer2);
 
-  vector<Operation> answer2 = beam_search(field, weights, 20, 30, 7, 100, 0.95, [](const vector<vector<int>>& field){
-    return count_pair(field) - measure_distance(field) + 0.0;
-  });
-  
-  for(const auto& op : answer2){
-    rotate(field,op);
-  }
+  // vector<Operation> answer3 = beam_search(field, weights, 200, 40, 4, 300, 0.80,100,func3);
+  // apply_ops(field,answer3);
 
-  // 幅、深さ双方を大きくする代わりに評価関数をペア数のみだけにする
-  vector<Operation> answer3 = beam_search(field, weights, 50, 50, 7, 300, 1.0, [](const vector<vector<int>>& field){
-    return count_pair(field) + 0.0;
-  });
-
+  // vector<Operation> answer4 = beam_search(field, weights, 200, 30, 1, 500, 1.0,30,func4);
 
   answer1.insert(answer1.end(),answer2.begin(),answer2.end());
+  // answer1.insert(answer1.end(),answer3.begin(),answer3.end());
+  // answer1.insert(answer1.end(),answer4.begin(),answer4.end());
 
   auto end_time = std::chrono::high_resolution_clock::now();
   auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - begin_time);
@@ -104,7 +103,7 @@ int main()
 }
 
 // ビームサーチ（最適化版 - moveセマンティクス使用）
-vector<Operation> beam_search(const vector<vector<int>> &field, vector<float> weights, int depth, int width, int commit_step, int num_sample, float tarm_ratio, const function<float(vector<vector<int>> &)> &evaluator)
+vector<Operation> beam_search(const vector<vector<int>> &field, vector<float> weights, int depth, int width, int commit_step, int num_sample, float tarm_ratio, int max_time,const function<float(vector<vector<int>> &)> &evaluator)
 {
   vector<vector<int>> tmp_field = field;
 
@@ -122,7 +121,7 @@ vector<Operation> beam_search(const vector<vector<int>> &field, vector<float> we
   // メモリを事前確保
   next_nodes.reserve(depth * num_sample);
 
-  while(true)
+  for(int i = 0; i<max_time;i++)
   {
     // commit_step回のステップにどれほど時間がかかるかを計測
     cerr << "time :" << time << endl;
@@ -171,6 +170,7 @@ vector<Operation> beam_search(const vector<vector<int>> &field, vector<float> we
       // 全てのペアが完成した時点でゲーム終了
       // ペアの割合がterm_ratioを超えた段階でビームサーチを終える
       if(static_cast<float>(count_pair(tmp_field))/max_pair_number >= tarm_ratio){
+        cerr << static_cast<float>(count_pair(tmp_field))/max_pair_number << endl;
         cerr << "end this search" << endl;
         return answer;
       }
@@ -184,6 +184,7 @@ vector<Operation> beam_search(const vector<vector<int>> &field, vector<float> we
     cerr << "exe_time: " << duration.count() << " ms" << endl;
     // timelocal.push_back(duration.count());
   }
+  return answer;
 }
 
 // その局面での全ての手を返す

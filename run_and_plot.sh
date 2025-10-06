@@ -8,6 +8,7 @@ echo "=== ビルド中 ==="
 g++ input_problem.cpp -o ./bin/input_problem.exe -std=c++17
 g++ main.cpp base.cpp evalution.cpp -O3 -o ./bin/main.exe -std=c++17
 g++ print_analysis.cpp base.cpp evalution.cpp -o ./bin/print_analysis.exe -std=c++17
+g++ create_answer_json.cpp base.cpp -o "./bin/create_answer_json.exe" -std=c++17
 
 # 変数定義（スペースなし）
 WEIGHTS_FILE=./testcase/weights.txt
@@ -26,5 +27,7 @@ echo "3. 分析データ生成..."
 
 echo "4. グラフ生成..."
 ./plt_analysis_graph.sh ./testcase/analysis_data.txt "$WIEGHT_LINE"
+echo "5. jsonファイル生成"
+./bin/create_answer_json.exe "./testcase/answer.json" < "./testcase/answer.txt" 
 
 echo "=== 完了 ==="

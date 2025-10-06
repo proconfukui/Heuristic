@@ -146,6 +146,12 @@ void print_matrix(const vector<vector<float>> &field)
   cerr << endl;
 }
 
+void apply_ops(vector<vector<int>>& field,const vector<Operation> ops){
+  for(const auto& op : ops){
+    rotate(field,op);
+  }
+}
+
 
 // 二次元配列のハッシュ値を計算するための関数（参照渡しでコピー回避）
 unsigned long hash_field(const vector<vector<int>>& field){

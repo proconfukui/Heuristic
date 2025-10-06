@@ -41,7 +41,10 @@ int main(int argc, char* argv[])
   vector<float> pair_ratios;
 
   // main.cppと合わせる
-  analys_answer(ops, field, values, pair_ratios, func1);
+  analys_answer(ops, field, values, pair_ratios, [&weights](const vector<vector<int>>& field){
+    return count_pair(field) * weights[0] - measure_distance(field)*weights[2] + 0.0;
+  });
+
   print_analysis(values, pair_ratios);
   return 0;
 }

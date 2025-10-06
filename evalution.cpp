@@ -10,14 +10,24 @@ using std::cerr;
 using std::endl;
 
 // 各座標の重み
-vector<vector<float>> _weight_matrix;
+vector<vector<float>> _weight_matrix1;
+vector<vector<float>> _weight_matrix2;
+
+
+// weights[0] : ペアの数 
+// weights[1] : ペア候補間の距離
+// weights[2] : z=(xy)^2の分布に基づくペアの評価
+// weights[3] : z=f(r) (r=root(x^2+y^2)) の分布に基づくペアの評価 
+
 vector<float> _weights;
 
 // weights(評価関数の重みと、weight_matrixを初期化)
 void initialize_evalutor(const vector<vector<int>> &field,const vector<float>& weigths){
   _weights = weigths;
-  _weight_matrix = add_matrix(create_x2y2_weight_matrix(field.size()),create_weight_matrix(field.size(),[](float x){return pow(x,2);}));
-  _weight_matrix = product_matrix(_weight_matrix,weigths[1]); 
+  _weight_matrix1 = create_x2y2_weight_matrix(field.size());
+  _weight_matrix2 = create_weight_matrix(field.size(),[](float x){
+    return pow(x,2);
+  });
 }
 
 
@@ -144,20 +154,20 @@ vector<vector<float>> create_x2y2_weight_matrix(int size){
 }
 
 // ペアの数を重みを付けて計算する
-float count_weighted_pair(const vector<vector<int>> &field)
+float count_weighted_pair(const vector<vector<int>> &field,const vector<vector<float>> & weight_matrix)
 {
   float counter = 0;
     for (int y = 0; y < field.size(); y++) {
         for (int x = 0; x < field.size() -1 ; x++) {
             if(field[y][x] == field[y][x+1]){
-                counter += _weight_matrix[y][x] + _weight_matrix[y][x+1];
+                counter += weight_matrix[y][x] + weight_matrix[y][x+1];
             } 
         }
     }
     for (int y = 0; y < field.size()-1; y++) {
         for (int x = 0; x < field.size(); x++) {
             if(field[y][x] == field[y+1][x]){
-                counter += _weight_matrix[y][x] + _weight_matrix[y+1][x];
+                counter += weight_matrix[y][x] + weight_matrix[y+1][x];
             } 
         }
     }
@@ -165,9 +175,28 @@ float count_weighted_pair(const vector<vector<int>> &field)
 }
 
 float func1(const vector<vector<int>> &field){
+  return count_weighted_pair(field,_weight_matrix1);
+}
+
+
+float func2(const vector<vector<int>> &field){
+  float term1 = measure_distance(field)*_weights[1];
+  float term2 = count_weighted_pair(field,_weight_matrix2)*_weights[3];
+  return -term1 + term2;
+}
+
+
+float func3(const vector<vector<int>> &field){
   float term1 = count_pair(field)*_weights[0];
-  float term2 = count_weighted_pair(field);
-  float term3 = measure_distance(field);
-  // cerr << term1 <<" "<< term2 <<" "<< term3 << endl;
-  return  term1 + term2 - term3;
+  float term2 = measure_distance(field)*_weights[1];
+    // cerr << term1 <<" "<< term2<< endl;
+  return  term1 - term2;
+}
+
+
+float func4(const vector<vector<int>> &field){
+  float term1 = count_pair(field)*_weights[0];
+  float term2 = measure_distance(field);
+  // cerr << term1 <<" "<< term2<<endl;
+  return  term1 + term2;
 }

@@ -15,5 +15,6 @@ void print_matrix(const vector<vector<int>> &field);
 void print_matrix(const vector<vector<float>> &field);
 int count_pair(const vector<vector<int>>& field);
 int rand_int(int a, int b);
+void apply_ops(vector<vector<int>>& field,const vector<Operation> ops);
 // Avoid copying the entire field when hashing
 unsigned long hash_field(const vector<vector<int>>& field);
