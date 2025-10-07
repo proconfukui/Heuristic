@@ -63,16 +63,52 @@ int measure_distance(const vector<vector<int>> &field)
   return total_dist;
 }
 
-vector<vector<float>> product_matrix(const vector<vector<float>>& field,float term){
-  int size = field.size();
-  vector<vector<float>> matrix = field;
-  for (int y = 0; y < size; y++) {
-    for (int x = 0; x < size; x++) {
-      matrix[y][x] *= term; 
-    }
-  }
-  return matrix;
-}
+
+// // ペア候補間の距離を測定する（高速版: 1パス・動的配列の再利用）
+// int measure_distance(const vector<vector<int>> &field)
+// {
+//   const int n = static_cast<int>(field.size());
+//   const int max_pair_number = (n * n) / 2;
+
+//   // 初回座標だけ保持（静的ベクタで容量を使い回し）
+//   static vector<int> first_x;
+//   static vector<int> first_y;
+//   first_x.assign(max_pair_number, -1);
+//   first_y.assign(max_pair_number, 0);
+
+//   int total = 0;
+
+//   for (int y = 0; y < n; ++y) {
+//     const int* row = field[y].data();
+//     for (int x = 0; x < n; ++x) {
+//       int number = row[x];
+//       // 想定: 0 <= number < max_pair_number（範囲外は無視）
+//       if (static_cast<unsigned>(number) >= static_cast<unsigned>(max_pair_number)) continue;
+
+//       int px = first_x[number];
+//       if (px == -1) {
+//         first_x[number] = x;
+//         first_y[number] = y;
+//       } else {
+//         int dx = px - x;
+//         int dy = first_y[number] - y;
+//         total += dx * dx + dy * dy;
+//       }
+//     }
+//   }
+//   return total;
+// }
+
+// vector<vector<float>> product_matrix(const vector<vector<float>>& field,float term){
+//   int size = field.size();
+//   vector<vector<float>> matrix = field;
+//   for (int y = 0; y < size; y++) {
+//     for (int x = 0; x < size; x++) {
+//       matrix[y][x] *= term; 
+//     }
+//   }
+//   return matrix;
+// }
 
 // ある関数を与えることにより、その関数をZ軸を中心に回転させたときの、(X,Y)のZの大きさが格納された大きさsizeの二重配列を返す
 // 最大値が1になるように標準化される
