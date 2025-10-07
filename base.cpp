@@ -78,28 +78,50 @@ void unrotate(vector<vector<int>> &field, Operation op)
   }
 }
 
-// ペアの数を数える
-// テスト済
+// // ペアの数を数える
+// // テスト済
+// int count_pair(const vector<vector<int>>& field){
+//     int counter = 0;
+//     for (int y = 0; y < field.size(); y++) {
+//         for (int x = 0; x < field.size() -1 ; x++) {
+//             if(field[y][x] == field[y][x+1]){
+//                 counter++;
+//             } 
+//         }
+//     }
+//     for (int y = 0; y < field.size()-1; y++) {
+//         for (int x = 0; x < field.size(); x++) {
+//             if(field[y][x] == field[y+1][x]){
+//                 counter++;
+//             } 
+//         }
+//     }
+//     return counter;
+// }
+
+
 int count_pair(const vector<vector<int>>& field){
-    int counter = 0;
-    for (int y = 0; y < field.size(); y++) {
-        for (int x = 0; x < field.size() -1 ; x++) {
-            if(field[y][x] == field[y][x+1]){
-                counter++;
-            } 
-        }
+  const int n = static_cast<int>(field.size());
+  if (n <= 0) return 0;
+
+  int counter = 0;
+  for (int y = 0; y < n; ++y) {
+    const int* row  = field[y].data();
+    const int* next = (y + 1 < n) ? field[y + 1].data() : nullptr;
+
+    // 水平: 行内の隣接要素を比較（0..n-2）
+    for (int x = 0; x + 1 < n; ++x) {
+      counter += (row[x] == row[x + 1]);
     }
-    for (int y = 0; y < field.size()-1; y++) {
-        for (int x = 0; x < field.size(); x++) {
-            if(field[y][x] == field[y+1][x]){
-                counter++;
-            } 
-        }
+    // 垂直: 下の行と同じ列を比較（0..n-1）
+    if (next) {
+      for (int x = 0; x < n; ++x) {
+        counter += (row[x] == next[x]);
+      }
     }
-    return counter;
+  }
+  return counter;
 }
-
-
 
 // デバッグ用。matrixの状態をターミナルに表示する
 // テスト済

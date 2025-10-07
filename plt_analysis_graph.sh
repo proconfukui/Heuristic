@@ -29,7 +29,7 @@ WEIGHTS_FILE="./testcase/weights.txt"
 WEIGHT_SUFFIX=""
 if [ -f "$WEIGHTS_FILE" ]; then
     # weights.txtから指定された行の重みの情報を読み取り
-    TOTAL_LINES=$(wc -l < "$WEIGHTS_FILE")
+    TOTAL_LINES=$(wc -l < "$WEIGHTS_FILE") + 1
     if [ "$WEIGHT_LINE_NUM" -gt "$TOTAL_LINES" ]; then
         echo "エラー: 指定された行番号($WEIGHT_LINE_NUM)が重みファイルの行数($TOTAL_LINES)を超えています"
         exit 1
