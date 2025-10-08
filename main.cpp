@@ -69,10 +69,10 @@ int main()
   vector<Operation> answer1 = beam_search(field, weights, 200, 70 , 10, 500, 1, 100,[](const vector<vector<int>>& field){
     return count_pair(field)*_weights[0] - measure_distance(field);
   });
-  // apply_ops(field,answer1);
-  // vector<Operation> answer2 = beam_search(field, weights, 300, 40 , 5, 500, 1, 100,[](const vector<vector<int>>& field){
-  //   return count_pair(field)*_weights[1] - measure_distance(field);
-  // });
+  apply_ops(field,answer1);
+  vector<Operation> answer2 = beam_search(field, weights, 300, 40 , 5, 500, 1, 100,[](const vector<vector<int>>& field){
+    return count_pair(field)*_weights[1] - measure_distance(field);
+  });
 
   // 4隅にペアを揃える
   // vector<Operation> answer1 = beam_search(field, weights, 200, 20, 4, 200, 0.20, 100,func1);
