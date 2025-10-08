@@ -15,6 +15,7 @@
 #include "evalution.hpp"
 #include "steps_table.hpp"
 #include "json.hpp"
+#include "solver.hpp"
 
 using std::cerr;
 using std::cin;
@@ -36,10 +37,10 @@ using std::vector;
 
 void initialize(int &start_time, vector<vector<int>> &field, vector<float> &weights);
 void print_answer(int time, const vector<Operation> &ops, const vector<vector<int>> &field);
-vector<Operation> beam_search(const vector<vector<int>> &field, vector<float> weights, int depth, int width, int commit_step, int num_sample, float tarm_ratio,int max_time, const function<float(vector<vector<int>> &)> &evaluator);
+vector<Operation> beam_search(const vector<vector<int>> &field, vector<float> weights, int depth, int width, int commit_step, int num_sample, float tarm_ratio, int max_time, const function<float(vector<vector<int>> &)> &evaluator);
 vector<Operation> best_operations_random(const vector<vector<int>> &field, int num_sample, int width, const function<float(vector<vector<int>> &)> &evaluator);
 vector<Operation> best_operations_random2(const vector<vector<int>> &field, int num_sample, int width, const function<float(vector<vector<int>> &)> &evaluator);
-vector<Operation> a_star(vector<vector<int>> field,const function<float(vector<vector<int>> &)> &evaluator);
+vector<Operation> a_star(vector<vector<int>> field, const function<float(vector<vector<int>> &)> &evaluator);
 
 int main()
 {
@@ -54,26 +55,52 @@ int main()
   initialize_evalutor(field, weights);
   // print_analysisで正しく解析できるよう、初期盤面を保持しておく
   vector<vector<int>> original_field = field;
-  vector<vector<float>> _weight_matrix2 = create_weight_matrix(field.size(),[](float x){return x*x;});
-
+  vector<vector<float>> _weight_matrix2 = create_weight_matrix(field.size(), [](float x) { return x * x; });
 
   // 処理の本体。時間を計測する
   auto begin_time = std::chrono::high_resolution_clock::now();
+  print_matrix(field);
 
-
-  float max_pair_num = field.size()*field.size()/2 +0.0;
-  // ビームサーチによる探索
-  // 処理時間は幅に比例
   vector<Operation> answer;
+  for (int y = 0; y < 1; y++)
+  {
+    for (int x = 1; x < field.size(); x += 2)
+    {
+      vector<Operation> tmp_answer = calculate_shortest_moves_with_obstacles(field, 1, x, y);
+      apply_ops(field, tmp_answer);
+      print_matrix(field);
+      answer.insert(answer.end(), tmp_answer.begin(), tmp_answer.end());
+    }
+  }
 
-  vector<Operation> answer1 = beam_search(field, weights, 200, 70 , 10, 500, 1, 100,[](const vector<vector<int>>& field){
-    return count_pair(field)*_weights[0] - measure_distance(field);
-  });
-  apply_ops(field,answer1);
-  vector<Operation> answer2 = beam_search(field, weights, 300, 40 , 5, 500, 1, 100,[](const vector<vector<int>>& field){
-    return count_pair(field)*_weights[1] - measure_distance(field);
-  });
+  
+  // for (int x = 0; x < 1; ++x)
+  // {
+  //   for (int y = field.size() - 1; y > 2; y -= 2)
+  //   {
+  //     vector<Operation> tmp_answer = calculate_shortest_moves_with_obstacles(field, 2, x, y);
+  //     apply_ops(field, tmp_answer);
+  //     print_matrix(field);
+  //     answer.insert(answer.end(), tmp_answer.begin(), tmp_answer.end());
+  //   }
+  // }
+  // print_matrix(field);
 
+  //---------------------------------------------------------------------------------------------------------------
+
+  // float max_pair_num = field.size()*field.size()/2 +0.0;
+  // // ビームサーチによる探索
+  // // 処理時間は幅に比例
+  // vector<Operation> answer;
+
+  // vector<Operation> answer1 = beam_search(field, weights, 200, 70 , 10, 500, 1, 100,[](const vector<vector<int>>& field){
+  //   return count_pair(field)*_weights[0] - measure_distance(field);
+  // });
+  // apply_ops(field,answer1);
+  // vector<Operation> answer2 = beam_search(field, weights, 300, 40 , 5, 500, 1, 100,[](const vector<vector<int>>& field){
+  //   return count_pair(field)*_weights[1] - measure_distance(field);
+  // });
+  // ---------------------------------------------------------------------------------------------------------------------------------
   // 4隅にペアを揃える
   // vector<Operation> answer1 = beam_search(field, weights, 200, 20, 4, 200, 0.20, 100,func1);
   // apply_ops(field,answer1);
@@ -104,11 +131,11 @@ int main()
 
   // 解析ツール（print_analysis）は「初期盤面」に対して手順を順に適用して評価を出すため
   // 出力時の盤面は初期盤面を渡す
-  print_answer(start_time, answer1, original_field);
+  print_answer(start_time, answer, original_field);
 }
 
 // ビームサーチ（最適化版 - moveセマンティクス使用）
-vector<Operation> beam_search(const vector<vector<int>> &field, vector<float> weights, int depth, int width, int commit_step, int num_sample, float tarm_ratio, int max_time,const function<float(vector<vector<int>> &)> &evaluator)
+vector<Operation> beam_search(const vector<vector<int>> &field, vector<float> weights, int depth, int width, int commit_step, int num_sample, float tarm_ratio, int max_time, const function<float(vector<vector<int>> &)> &evaluator)
 {
   vector<vector<int>> tmp_field = field;
 
@@ -126,10 +153,10 @@ vector<Operation> beam_search(const vector<vector<int>> &field, vector<float> we
   // メモリを事前確保
   next_nodes.reserve(depth * num_sample);
 
-  for(int i = 0; i<max_time;i++)
+  for (int i = 0; i < max_time; i++)
   {
     // commit_step回のステップにどれほど時間がかかるかを計測
-    cerr << "time :" << i*commit_step << endl;
+    cerr << "time :" << i * commit_step << endl;
     auto begin_time = std::chrono::high_resolution_clock::now();
 
     // 初期場面のノードを代入
@@ -166,7 +193,8 @@ vector<Operation> beam_search(const vector<vector<int>> &field, vector<float> we
       next_nodes.clear();
     }
 
-    if (nodes.empty()) {
+    if (nodes.empty())
+    {
       // 展開できなかった場合はここで探索を終了
       cerr << "no candidate nodes; terminate beam." << endl;
       return answer;
@@ -180,8 +208,9 @@ vector<Operation> beam_search(const vector<vector<int>> &field, vector<float> we
       rotate(tmp_field, best.ops[i]);
       // 全てのペアが完成した時点でゲーム終了
       // ペアの割合がterm_ratioを超えた段階でビームサーチを終える
-      if(static_cast<float>(count_pair(tmp_field))/max_pair_number >= tarm_ratio){
-        cerr << static_cast<float>(count_pair(tmp_field))/max_pair_number << endl;
+      if (static_cast<float>(count_pair(tmp_field)) / max_pair_number >= tarm_ratio)
+      {
+        cerr << static_cast<float>(count_pair(tmp_field)) / max_pair_number << endl;
         cerr << "end this search" << endl;
         return answer;
       }
@@ -205,9 +234,11 @@ vector<Operation> select_all_operation(const vector<vector<int>> &field)
   int field_size = field.size();
   vector<Operation> candidates;
   // おおよその手数: sum_{n=2..N} (N-n+1)^2 = sum_{k=1..N-1} k^2 = N(N-1)(2N-1)/6
-  if (field_size >= 2) {
+  if (field_size >= 2)
+  {
     int approx = field_size * (field_size - 1) * (2 * field_size - 1) / 6;
-    if (approx > 0) candidates.reserve(approx);
+    if (approx > 0)
+      candidates.reserve(approx);
   }
   for (int y = 0; y < field_size - 1; y++)
   {
@@ -259,20 +290,22 @@ vector<Operation> best_operations_random1(const vector<vector<int>> &field, int 
   return result;
 }
 
-
 // 2.2 別アルゴリズム版: 全手を列挙→シャッフル→上からnum_sample個を評価し、上位width手を返す
 vector<Operation> best_operations_random2(const vector<vector<int>> &field, int num_sample, int width, const function<float(vector<vector<int>> &)> &evaluator)
 {
   int field_size = field.size();
   // 全手を列挙
   vector<Operation> all_ops = select_all_operation(field);
-  if (all_ops.empty()) return {};
+  if (all_ops.empty())
+    return {};
 
   // サンプル数を全手数にクリップ
-  if (num_sample > static_cast<int>(all_ops.size())) {
+  if (num_sample > static_cast<int>(all_ops.size()))
+  {
     num_sample = static_cast<int>(all_ops.size());
   }
-  if (num_sample <= 0) return {};
+  if (num_sample <= 0)
+    return {};
 
   // シャッフル
   // 既存のrand_intは範囲乱数を返すので、ここではstd::mt19937をローカルに用意
@@ -284,7 +317,8 @@ vector<Operation> best_operations_random2(const vector<vector<int>> &field, int 
   vector<pair<float, Operation>> scored;
   scored.reserve(num_sample);
   vector<vector<int>> tmp_field = field;
-  for (int i = 0; i < num_sample; ++i) {
+  for (int i = 0; i < num_sample; ++i)
+  {
     const Operation &op = all_ops[i];
     rotate(tmp_field, op);
     float sc = evaluator(tmp_field);
@@ -293,28 +327,30 @@ vector<Operation> best_operations_random2(const vector<vector<int>> &field, int 
   }
 
   // 上位width件を抽出
-  if (width > static_cast<int>(scored.size())) {
+  if (width > static_cast<int>(scored.size()))
+  {
     width = static_cast<int>(scored.size());
   }
-  if (width > 0) {
+  if (width > 0)
+  {
     // 部分ソートで上位のみ確定（降順）
     std::partial_sort(scored.begin(), scored.begin() + width, scored.end(),
-                      [](const pair<float, Operation> &a, const pair<float, Operation> &b) {
+                      [](const pair<float, Operation> &a, const pair<float, Operation> &b)
+                      {
                         return a.first > b.first;
                       });
   }
 
   vector<Operation> result;
   result.reserve(width);
-  for (int i = 0; i < width; ++i) {
+  for (int i = 0; i < width; ++i)
+  {
     result.push_back(scored[i].second);
   }
   return result;
 }
 
-
-
-vector<Operation> a_star(vector<vector<int>> field,const function<float(vector<vector<int>> &)> &evaluator)
+vector<Operation> a_star(vector<vector<int>> field, const function<float(vector<vector<int>> &)> &evaluator)
 {
   priority_queue<State> pq;
   unordered_set<size_t> visited; // 状態のハッシュ値で管理
@@ -339,7 +375,8 @@ vector<Operation> a_star(vector<vector<int>> field,const function<float(vector<v
 
     // ゴール判定（例: 全ペア揃ったか）: 現在ノードの盤面で判定する
     int pairs = count_pair(cur.field);
-    if (pairs > best_pairs) {
+    if (pairs > best_pairs)
+    {
       best_pairs = pairs;
       best_ops = cur.ops;
     }
@@ -368,10 +405,12 @@ vector<Operation> a_star(vector<vector<int>> field,const function<float(vector<v
       pq.push(State{next_field, next_ops, g, h, g + h});
       expanded++;
       // セーフガード判定
-      if (expanded % 2048 == 0) {
+      if (expanded % 2048 == 0)
+      {
         auto now = std::chrono::high_resolution_clock::now();
         auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - start).count();
-        if (elapsed > time_limit_ms || expanded > expand_limit) {
+        if (elapsed > time_limit_ms || expanded > expand_limit)
+        {
           return best_ops; // 暫定ベストを返す
         }
       }

@@ -26,6 +26,27 @@ struct Operation
     }
 };
 
+struct Point {
+    int x, y;
+
+    // std::setで使えるように比較演算子を定義
+    bool operator<(const Point& other) const {
+        if (y != other.y) return y < other.y;
+        return x < other.x;
+    }
+    bool operator == (const Point& other) const
+    {
+        return x == other.x && y == other.y;
+    }
+};
+
+// BFS探索で使用する構造体に経路情報を追加
+struct BFSNode {
+    int x, y, dist;
+    std::vector<Operation> path;  // 経路を記録
+};
+
+
 struct BeamNode {
     vector<vector<int>> field;
     vector<Operation> ops;
@@ -54,3 +75,4 @@ struct State {
         return f > other.f;
     }
 };
+

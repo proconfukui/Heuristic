@@ -53,6 +53,31 @@
             "group": "build",
         },
         {
+            "label": "build-solver",
+            "type": "shell",
+            "command":"g++",
+            "args": [
+                "solver.cpp",
+                "-o",
+                "-g",
+                "./bin/solver.exe",
+                "-std=c++17"
+            ],
+            "group": "build",
+            "problemMatcher":[
+                "$gcc"
+            ]
+        },
+        {
+           "label": "rm-solver",
+            "type": "shell",
+            "command": "rm",
+            "args": [
+                "./bin/solver.exe",
+            ],
+            "group": "build",
+        },
+        {
             "label": "build-main",
             "type": "shell",
             "command": "g++",
@@ -60,6 +85,7 @@
                 "main.cpp",
                 "evalution.cpp",
                 "base.cpp",
+                "solver.cpp",
                 "-o",
                 "./bin/main.exe",
                 "-g",

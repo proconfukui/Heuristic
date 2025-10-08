@@ -68,6 +68,27 @@
             "postDebugTask": "rm-input_problem"
         },
         {
+            "name": "solver Debug",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/bin/solver.exe",
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "miDebuggerPath": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "build-solver",
+            "postDebugTask": "rm-solver"
+        },
+        {
             "name": "main Debug",
             "type": "cppdbg",
             "request": "launch",

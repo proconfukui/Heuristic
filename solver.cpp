@@ -4,23 +4,7 @@
 #include <queue>
 #include <algorithm>
 #include <chrono>
-
-// Pythonの(x, y)座標タプルを扱うための構造体
-struct Point {
-    int x, y;
-
-    // std::setで使えるように比較演算子を定義
-    bool operator<(const Point& other) const {
-        if (y != other.y) return y < other.y;
-        return x < other.x;
-    }
-};
-
-// Pythonのqueueで使っていたタプル(x, y, dist)を扱うための構造体
-struct BFSNode {
-    int x, y, dist;
-};
-
+#include "utils.hpp"
 
 std::set<Point> generate_fixed_cells_phase1(int target_x, int target_y, int field_size) {
     std::set<Point> fixed_cells;
@@ -62,31 +46,63 @@ Point get_rotated_pos(int x, int y, int en_x, int en_y, int en_size) {
     return {en_x + new_rel_x, en_y + new_rel_y};
 }
 
-std::vector<std::vector<int>> calculate_shortest_moves_with_obstacles(
-    int field_size,
+// ペアの片割れを探す
+Point find_pair(const vector<vector<int>>& field,Point p){
+    int number = field[p.y][p.x];
+    for(int y = 0;y < field.size();y++){
+        for(int x = 0;x< field.size();x++){
+            if(x == p.x && y== p.y) continue;
+            if(field[y][x] == number){
+                return {x,y};
+            }
+        }
+    }
+    return {-1,-1};
+}
+
+
+vector<Operation> calculate_shortest_moves_with_obstacles(
+    const vector<vector<int>>& field, 
     int phase,
     int start_x, 
-    int start_y, 
-    const std::set<Point>& fixed_cells
+    int start_y
 ) {
+    int field_size = field.size();
+
+    Point move_p;
+
+    std::set<Point> fixed_cells;
+    if (phase == 1) {
+        fixed_cells = generate_fixed_cells_phase1(start_x, start_y, field_size);
+        move_p = find_pair(field,{start_x-1,start_y});
+    } else if (phase == 2) {
+        fixed_cells = generate_fixed_cells_phase2(start_x, start_y, field_size);
+        move_p = find_pair(field,{start_x,start_y-1});
+    } else {
+        std::cerr << "Error: Unknown Phase " << phase << ". Please set PHASE to 1 or 2." << std::endl;
+        exit(1);
+    }
+
+
     if (fixed_cells.count({start_x, start_y})) {
         std::cerr << "Error: Target (" << start_x << ", " << start_y << ") is inside a fixed area. Cannot calculate." << std::endl;
-        return {{}};
+        exit(1);
     }
 
     std::vector<std::vector<int>> distances(field_size, std::vector<int>(field_size, -1));
     std::deque<BFSNode> queue;
 
-    queue.push_back({start_x, start_y, 0});
+    queue.push_back({start_x, start_y, 0,{}});
     distances[start_y][start_x] = 0;
     
-    auto start_time = std::chrono::high_resolution_clock::now();
-    std::cout << "Calculating moves for Phase " << phase << ", Target (" << start_x << ", " << start_y 
-              << ") with " << fixed_cells.size() << " fixed cells..." << std::endl;
-
     while (!queue.empty()) {
         BFSNode current = queue.front();
         queue.pop_front();
+        // ターゲットに到達した場合
+        if (current.x == move_p.x && current.y == move_p.y) {
+            std::reverse(current.path.begin(),current.path.end());
+            return current.path;
+        }
 
         for (int n = 2; n <= field_size; ++n) {
             int min_rx = std::max(0, current.x - n + 1);
@@ -110,61 +126,16 @@ std::vector<std::vector<int>> calculate_shortest_moves_with_obstacles(
                     if (!is_valid_en) continue;
 
                     Point next_pos = get_rotated_pos(current.x, current.y, rx, ry, n);
-
+                    
                     if (distances[next_pos.y][next_pos.x] == -1 && !fixed_cells.count({next_pos.x, next_pos.y})) {
                         distances[next_pos.y][next_pos.x] = current.dist + 1;
-                        queue.push_back({next_pos.x, next_pos.y, current.dist + 1});
+                        vector<Operation> new_path = current.path;
+                        new_path.push_back({rx,ry,n});
+                        queue.push_back({next_pos.x, next_pos.y, current.dist + 1,new_path});
                     }
                 }
             }
         }
     }
-    
-    auto end_time = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> elapsed = end_time - start_time;
-    std::cout << "\nCalculation complete in " << elapsed.count() << " seconds." << std::endl;
-    
-    return distances;
-}
-
-// --- 実行と結果表示のためのメイン関数 ---
-int main() {
-    // --- 設定項目 ---
-    const int FIELD_SIZE = 12;
-    const int PHASE = 2;
-    const int TARGET_X = 1;
-    const int TARGET_Y = 4;
-    // -----------------
-
-    std::cout << "--- Move Distribution Generator (Phase " << PHASE << ") ---" << std::endl;
-    std::cout << "Field Size: " << FIELD_SIZE << "x" << FIELD_SIZE << std::endl;
-    std::cout << "Target Coordinate: (" << TARGET_X << ", " << TARGET_Y << ")" << std::endl;
-
-    std::set<Point> fixed_cells;
-    if (PHASE == 1) {
-        fixed_cells = generate_fixed_cells_phase1(TARGET_X, TARGET_Y, FIELD_SIZE);
-    } else if (PHASE == 2) {
-        fixed_cells = generate_fixed_cells_phase2(TARGET_X, TARGET_Y, FIELD_SIZE);
-    } else {
-        std::cerr << "Error: Unknown Phase " << PHASE << ". Please set PHASE to 1 or 2." << std::endl;
-        return 1;
-    }
-
-    std::cout << "Auto-generated Fixed Cells: " << fixed_cells.size() << std::endl;
-    std::cout << "----------------------------------------------------" << std::endl;
-
-    std::vector<std::vector<int>> move_distribution = 
-        calculate_shortest_moves_with_obstacles(FIELD_SIZE, PHASE, TARGET_X, TARGET_Y, fixed_cells);
-
-    if (!move_distribution.empty() && !move_distribution[0].empty()) {
-        std::cout << "Resulting distribution grid:" << std::endl;
-        for (int y = 0; y < FIELD_SIZE; ++y) {
-            for (int x = 0; x < FIELD_SIZE; ++x) {
-                std::cout << move_distribution[y][x] << "\t";
-            }
-            std::cout << std::endl;
-        }
-    }
-
-    return 0;
+    return {};
 }
