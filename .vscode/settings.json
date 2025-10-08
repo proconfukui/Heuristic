@@ -76,7 +76,17 @@
         "xutility": "cpp",
         "unordered_set": "cpp",
         "deque": "cpp",
-        "string_view": "cpp"
+        "string_view": "cpp",
+        "condition_variable": "cpp",
+        "cstdarg": "cpp",
+        "cwctype": "cpp",
+        "memory_resource": "cpp",
+        "mutex": "cpp",
+        "numbers": "cpp",
+        "semaphore": "cpp",
+        "stop_token": "cpp",
+        "thread": "cpp",
+        "variant": "cpp"
     },
     "C_Cpp.errorSquiggles": "disabled",
     "workbench.editor.defaultBinaryEditor": "default"

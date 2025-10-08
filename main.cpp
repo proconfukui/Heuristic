@@ -62,7 +62,7 @@ int main()
   print_matrix(field);
 
   vector<Operation> answer;
-  for (int y = 0; y < 1; y++)
+  for (int y = 0; y <= 1; y++)
   {
     for (int x = 1; x < field.size(); x += 2)
     {
@@ -72,34 +72,38 @@ int main()
       answer.insert(answer.end(), tmp_answer.begin(), tmp_answer.end());
     }
   }
-
   
-  // for (int x = 0; x < 1; ++x)
-  // {
-  //   for (int y = field.size() - 1; y > 2; y -= 2)
-  //   {
-  //     vector<Operation> tmp_answer = calculate_shortest_moves_with_obstacles(field, 2, x, y);
-  //     apply_ops(field, tmp_answer);
-  //     print_matrix(field);
-  //     answer.insert(answer.end(), tmp_answer.begin(), tmp_answer.end());
-  //   }
-  // }
-  // print_matrix(field);
+  for(const auto& op:answer){
+    cerr << op.x << " " << op.y << " " << op.n <<endl;
+  }
+
+
+  for (int x = 0; x < 1; ++x)
+  {
+    for (int y = field.size() - 1; y > 2; y -= 2)
+    {
+      vector<Operation> tmp_answer = calculate_shortest_moves_with_obstacles(field, 2, x, y);
+      apply_ops(field, tmp_answer);
+      print_matrix(field);
+      answer.insert(answer.end(), tmp_answer.begin(), tmp_answer.end());
+    }
+  }
+  print_matrix(field);
 
   //---------------------------------------------------------------------------------------------------------------
 
-  // float max_pair_num = field.size()*field.size()/2 +0.0;
-  // // ビームサーチによる探索
-  // // 処理時間は幅に比例
-  // vector<Operation> answer;
+//   float max_pair_num = field.size()*field.size()/2 +0.0;
+//   // ビームサーチによる探索
+//   // 処理時間は幅に比例
+// //  vector<Operation> answer;
 
-  // vector<Operation> answer1 = beam_search(field, weights, 200, 70 , 10, 500, 1, 100,[](const vector<vector<int>>& field){
-  //   return count_pair(field)*_weights[0] - measure_distance(field);
-  // });
-  // apply_ops(field,answer1);
-  // vector<Operation> answer2 = beam_search(field, weights, 300, 40 , 5, 500, 1, 100,[](const vector<vector<int>>& field){
-  //   return count_pair(field)*_weights[1] - measure_distance(field);
-  // });
+//   vector<Operation> answer1 = beam_search(field, weights, 200, 70 , 10, 500, 1, 100,[](const vector<vector<int>>& field){
+//     return count_pair(field)*_weights[0] - measure_distance(field);
+//   });
+//   apply_ops(field,answer1);
+//   vector<Operation> answer2 = beam_search(field, weights, 300, 40 , 5, 500, 1, 100,[](const vector<vector<int>>& field){
+//     return count_pair(field)*_weights[1] - measure_distance(field);
+//   });
   // ---------------------------------------------------------------------------------------------------------------------------------
   // 4隅にペアを揃える
   // vector<Operation> answer1 = beam_search(field, weights, 200, 20, 4, 200, 0.20, 100,func1);

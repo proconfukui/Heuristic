@@ -71,13 +71,17 @@ vector<Operation> calculate_shortest_moves_with_obstacles(
 
     Point move_p;
 
+    std::deque<BFSNode> queue;
     std::set<Point> fixed_cells;
+
     if (phase == 1) {
         fixed_cells = generate_fixed_cells_phase1(start_x, start_y, field_size);
         move_p = find_pair(field,{start_x-1,start_y});
+        queue.push_back({start_x-1,start_y+1,1,{{start_x-1,start_y,2}}});
     } else if (phase == 2) {
         fixed_cells = generate_fixed_cells_phase2(start_x, start_y, field_size);
         move_p = find_pair(field,{start_x,start_y-1});
+        queue.push_back({start_x+1,start_y+1,1,{{start_x,start_y-1,2}}});
     } else {
         std::cerr << "Error: Unknown Phase " << phase << ". Please set PHASE to 1 or 2." << std::endl;
         exit(1);
@@ -90,7 +94,7 @@ vector<Operation> calculate_shortest_moves_with_obstacles(
     }
 
     std::vector<std::vector<int>> distances(field_size, std::vector<int>(field_size, -1));
-    std::deque<BFSNode> queue;
+    
 
     queue.push_back({start_x, start_y, 0,{}});
     distances[start_y][start_x] = 0;
