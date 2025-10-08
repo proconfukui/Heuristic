@@ -68,27 +68,28 @@ int main()
     {
       vector<Operation> tmp_answer = calculate_shortest_moves_with_obstacles(field, 1, x, y);
       apply_ops(field, tmp_answer);
-      print_matrix(field);
       answer.insert(answer.end(), tmp_answer.begin(), tmp_answer.end());
     }
   }
   
-  for(const auto& op:answer){
-    cerr << op.x << " " << op.y << " " << op.n <<endl;
-  }
-
-
-  for (int x = 0; x < 1; ++x)
-  {
-    for (int y = field.size() - 1; y > 2; y -= 2)
-    {
-      vector<Operation> tmp_answer = calculate_shortest_moves_with_obstacles(field, 2, x, y);
-      apply_ops(field, tmp_answer);
-      print_matrix(field);
-      answer.insert(answer.end(), tmp_answer.begin(), tmp_answer.end());
-    }
-  }
+  cerr << "縦終わり" << endl;
+  //apply_ops(field, answer);
+  vector<Operation> tmp_answer = calculate_shortest_moves_with_obstacles(field, 2, 0, field.size()-2);
+  apply_ops(field,tmp_answer);
+  answer.insert(answer.end(), tmp_answer.begin(), tmp_answer.end());
   print_matrix(field);
+
+  // for (int x = 0; x < 1; ++x)
+  // {
+  //   for (int y = field.size() - 1; y > 2; y -= 2)
+  //   {
+  //     vector<Operation> tmp_answer = calculate_shortest_moves_with_obstacles(field, 2, x, y);
+  //     apply_ops(field, tmp_answer);
+  //     print_matrix(field);
+  //     answer.insert(answer.end(), tmp_answer.begin(), tmp_answer.end());
+  //   }
+  // }
+  // print_matrix(field);
 
   //---------------------------------------------------------------------------------------------------------------
 
@@ -263,7 +264,7 @@ vector<Operation> select_all_operation(const vector<vector<int>> &field)
 // }
 
 // 2.2 ランダムにの手の評価値を計算し、上位width手を返す
-vector<Operation> best_operations_random1(const vector<vector<int>> &field, int num_sample, int width, const function<float(vector<vector<int>> &)> &evaluator)
+vector<Operation> best_operations_random(const vector<vector<int>> &field, int num_sample, int width, const function<float(vector<vector<int>> &)> &evaluator)
 {
   int field_size = field.size();
   // 取りうる全ての手とサンプル数を比べ少ないほうを選ぶ

@@ -73,7 +73,7 @@ vector<Operation> calculate_shortest_moves_with_obstacles(
 
     std::deque<BFSNode> queue;
     std::set<Point> fixed_cells;
-
+    queue.push_back({start_x, start_y, 0,{}});
     if (phase == 1) {
         fixed_cells = generate_fixed_cells_phase1(start_x, start_y, field_size);
         move_p = find_pair(field,{start_x-1,start_y});
@@ -96,7 +96,7 @@ vector<Operation> calculate_shortest_moves_with_obstacles(
     std::vector<std::vector<int>> distances(field_size, std::vector<int>(field_size, -1));
     
 
-    queue.push_back({start_x, start_y, 0,{}});
+    
     distances[start_y][start_x] = 0;
     
     while (!queue.empty()) {

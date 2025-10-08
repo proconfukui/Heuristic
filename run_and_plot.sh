@@ -6,7 +6,7 @@ set -e  # エラーで停止
 
 echo "=== ビルド中 ==="
 g++ input_problem.cpp -o ./bin/input_problem.exe -std=c++17
-g++ main.cpp base.cpp evalution.cpp -O3 -o ./bin/main.exe -std=c++17
+g++ main.cpp base.cpp evalution.cpp solver.cpp -O3 -o ./bin/main.exe -std=c++17
 g++ print_analysis.cpp base.cpp evalution.cpp -o ./bin/print_analysis.exe -std=c++17
 g++ create_answer_json.cpp base.cpp -o "./bin/create_answer_json.exe" -std=c++17
 
