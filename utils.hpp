@@ -61,6 +61,12 @@ struct BeamNode {
     
     BeamNode(vector<vector<int>>&& f, vector<Operation>&& o, float s)
         : field(std::move(f)), ops(std::move(o)), score(s) {}
+
+    // 明示的なムーブ/コピー（realloc時にムーブが優先されるようにnoexceptを付与）
+    BeamNode(const BeamNode&) = default;
+    BeamNode& operator=(const BeamNode&) = default;
+    BeamNode(BeamNode&&) noexcept = default;
+    BeamNode& operator=(BeamNode&&) noexcept = default;
 };
 
 struct State {

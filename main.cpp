@@ -110,14 +110,17 @@ int main()
 
   cerr << "start beam_search" << endl;
   print_matrix(tmp_field);
+
+
+
   vector<Operation> tmp_answer = {};
   int new_max_pair_number = tmp_field.size() * tmp_field.size() /2 ;
 
-  vector<Operation> answer1 = beam_search(tmp_field, weights, 30, 50, 10, 200, 100, [new_max_pair_number](const vector<vector<int>> &field)
+  vector<Operation> answer1 = beam_search(tmp_field, weights, 50, 50, 5, 200, 100, [new_max_pair_number](const vector<vector<int>> &field)
                                           { return count_pair(field) / new_max_pair_number > 0.8; }, [](const vector<vector<int>> &field)
                                           { return count_pair(field) * _weights[0] - measure_distance(field); });
   apply_ops(tmp_field, answer1);
-  vector<Operation> answer2 = beam_search(tmp_field, weights, 50, 40, 5, 200, 100, [new_max_pair_number](const vector<vector<int>> &field)
+  vector<Operation> answer2 = beam_search(tmp_field, weights, 100, 40, 3, 200, 100, [new_max_pair_number](const vector<vector<int>> &field)
                                           { return count_pair(field) / new_max_pair_number > 1; }, [](const vector<vector<int>> &field)
                                           { return count_pair(field) * _weights[1] - measure_distance(field); });
 
@@ -179,6 +182,16 @@ int main()
 // ビームサーチ
 vector<Operation> beam_search(const vector<vector<int>> &field, vector<float> weights, int depth, int width, int commit_step, int num_sample, int max_time, const function<bool(vector<vector<int>> &)> &judge, const function<float(vector<vector<int>> &)> &evaluator)
 {
+  auto is_valid_op_for_field = [](const vector<vector<int>> &f, const Operation &op) -> bool {
+    if (op.n < 2) return false;
+    int N = static_cast<int>(f.size());
+    if (N <= 0) return false;
+    if (op.x < 0 || op.y < 0) return false;
+    if (op.x >= N || op.y >= N) return false;
+    if (op.x + op.n > N) return false;
+    if (op.y + op.n > N) return false;
+    return true;
+  };
   vector<vector<int>> tmp_field = field;
 
   // 最大のペア数
@@ -189,11 +202,10 @@ vector<Operation> beam_search(const vector<vector<int>> &field, vector<float> we
 
   // 使う配列を事前に宣言
   vector<BeamNode> nodes;
-  vector<BeamNode> next_nodes;
   vector<Operation> candidates;
 
   // メモリを事前確保
-  next_nodes.reserve(depth * num_sample*sizeof(BeamNode));
+  // NOTE: next_nodes は depth ループ内で都度作成するため、ここでの reserve は不要
 
   for (int i = 0; i < max_time; i++)
   {
@@ -206,12 +218,20 @@ vector<Operation> beam_search(const vector<vector<int>> &field, vector<float> we
 
     for (int d = 0; d < depth; d++)
     {
+      // 層ごとに next_nodes を作成し直す（ムーブ後のクリア等によるライフタイム問題を回避）
+      vector<BeamNode> next_nodes;
+      next_nodes.reserve(std::max(1, (int)nodes.size()) * std::max(1, width));
+
       // next_nodeに新しい生成されるnodeを作る
       for (const auto &node : nodes)
       {
         candidates = best_operations_random2(node.field, num_sample, width, evaluator);
         for (const auto &op : candidates)
         {
+          // 安全性チェック（範囲外アクセスによるヒープ破損を防ぐ）
+          if (!is_valid_op_for_field(node.field, op)) {
+            continue;
+          }
           vector<vector<int>> work_field = node.field; // コピーを作成
           rotate(work_field, op);
           float score = evaluator(work_field);
@@ -232,7 +252,6 @@ vector<Operation> beam_search(const vector<vector<int>> &field, vector<float> we
         next_nodes.resize(width);
       }
       nodes = std::move(next_nodes);
-      next_nodes.clear();
     }
 
     if (nodes.empty())

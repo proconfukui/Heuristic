@@ -2,6 +2,7 @@
 #include <vector>
 #include <functional>
 #include <iostream>
+#include <unordered_map>
 #include "base.hpp"
 
 using std::cerr;
@@ -35,37 +36,36 @@ void initialize_evalutor(const vector<vector<int>> &field, const vector<float> &
 // テスト済
 int measure_distance(const vector<vector<int>> &field)
 {
-  const int size = field.size();
-  const int max_pair_number = size * size / 2;
-  // x1,y1,x2,y2 を一列の配列で管理（-1 初期化）。reserve/clear コスト回避。
-  vector<int> coords(max_pair_number * 4, -1);
-  for (int y = 0; y < size; y++)
+  // ラベル値（number）がサブフィールドでは連続かつ小さいとは限らないため、
+  // 動的なマップで最初の出現座標を保持し、2回目で距離を加算する。
+  const int n = static_cast<int>(field.size());
+  if (n <= 0)
+    return 0;
+
+  std::unordered_map<int, std::pair<int, int>> first_pos;
+  first_pos.reserve(n * n / 2);
+
+  int total = 0;
+  for (int y = 0; y < n; ++y)
   {
-    for (int x = 0; x < size; x++)
+    for (int x = 0; x < n; ++x)
     {
       int number = field[y][x];
-      int idx = number * 4;
-      if (coords[idx] == -1)
+      auto it = first_pos.find(number);
+      if (it == first_pos.end())
       {
-        coords[idx] = x;     // x1
-        coords[idx + 1] = y; // y1
+        first_pos.emplace(number, std::make_pair(x, y));
       }
       else
       {
-        coords[idx + 2] = x; // x2
-        coords[idx + 3] = y; // y2
+        int dx = it->second.first - x;
+        int dy = it->second.second - y;
+        total += dx * dx + dy * dy;
+        // 必要なら消してもよいが、2回出現想定なので放置でも可
       }
     }
   }
-  int total_dist = 0;
-  for (int i = 0; i < max_pair_number; i++)
-  {
-    int idx = i * 4;
-    int dx = coords[idx] - coords[idx + 2];
-    int dy = coords[idx + 1] - coords[idx + 3];
-    total_dist += dx * dx + dy * dy; // pow を避ける
-  }
-  return total_dist;
+  return total;
 }
 
 // // ペア候補間の距離を測定する（高速版: 1パス・動的配列の再利用）

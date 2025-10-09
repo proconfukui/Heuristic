@@ -18,6 +18,15 @@ using std::vector;
 // テスト済 - in-place回転で最適化
 void rotate(vector<vector<int>> &field, Operation op)
 {
+  // 安全性チェック: 範囲外アクセス防止
+  int N = static_cast<int>(field.size());
+  if (N <= 0) return;
+  if (op.n < 2) return;
+  if (op.x < 0 || op.y < 0) return;
+  if (op.x >= N || op.y >= N) return;
+  if (op.x + op.n > N) return;
+  if (op.y + op.n > N) return;
+
   // in-place回転: 外側から内側に向かって同心円状に回転
   for (int layer = 0; layer < op.n / 2; layer++)
   {
@@ -50,6 +59,15 @@ void rotate(vector<vector<int>> &field, Operation op)
 // テスト済 - in-place反時計回りで最適化（rotateの逆操作を一回で実行）
 void unrotate(vector<vector<int>> &field, Operation op)
 {
+  // 安全性チェック: 範囲外アクセス防止
+  int N = static_cast<int>(field.size());
+  if (N <= 0) return;
+  if (op.n < 2) return;
+  if (op.x < 0 || op.y < 0) return;
+  if (op.x >= N || op.y >= N) return;
+  if (op.x + op.n > N) return;
+  if (op.y + op.n > N) return;
+
   // in-place反時計回り回転: 外側から内側に向かって同心円状に逆回転
   for (int layer = 0; layer < op.n / 2; layer++)
   {
