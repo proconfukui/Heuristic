@@ -79,7 +79,7 @@ int main()
   // -------------------------------------------------------------------------------------------------------
   // 端から揃える方法
   vector<vector<int>> tmp_field = field;
-  int chenge_point = 8;
+  int chenge_point = 6;
   int max_pair_number = field.size() * field.size() / 2;
   for (int layer = 0;field.size() - layer > chenge_point; layer += 2)
   {
@@ -116,12 +116,12 @@ int main()
   vector<Operation> tmp_answer = {};
   int new_max_pair_number = tmp_field.size() * tmp_field.size() /2 ;
 
-  vector<Operation> answer1 = beam_search(tmp_field, weights, 50, 50, 5, 200, 100, [new_max_pair_number](const vector<vector<int>> &field)
+  vector<Operation> answer1 = beam_search(tmp_field, weights, 50, 50, 5, 300, 100, [new_max_pair_number](const vector<vector<int>> &field)
                                           { return count_pair(field) / new_max_pair_number > 0.8; }, [](const vector<vector<int>> &field)
                                           { return count_pair(field) * _weights[0] - measure_distance(field); });
   apply_ops(tmp_field, answer1);
   vector<Operation> answer2 = beam_search(tmp_field, weights, 100, 40, 3, 200, 100, [new_max_pair_number](const vector<vector<int>> &field)
-                                          { return count_pair(field) / new_max_pair_number > 1; }, [](const vector<vector<int>> &field)
+                                          { return count_pair(field) / new_max_pair_number >= 1; }, [](const vector<vector<int>> &field)
                                           { return count_pair(field) * _weights[1] - measure_distance(field); });
 
   tmp_answer.insert(tmp_answer.end(), answer1.begin(), answer1.end());
