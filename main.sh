@@ -8,8 +8,8 @@
 # ./main.sh testcase/problem.json testcase/weights.txt 1 ./bin/main.exe | ./bin/create_answer_json.exe testcase/answer.json
 # cat output_*.txtで出てきた複数の標準出力の中から最も好ましい解をcreate_answer.jsonで出力する。
 
-# CORE_NUM=$(nproc) # Windowsの場合
-CORE_NUM=$(sysctl -n hw.ncpu) # Macの場合
+CORE_NUM=$(nproc) # Windowsの場合
+# CORE_NUM=$(sysctl -n hw.ncpu) # Macの場合
 
 # main.exeをコアごとに実行し、一時ファイルに出力
 
