@@ -80,8 +80,8 @@ vector<Operation> calculate_shortest_moves_with_obstacles(
         queue.push_back({start_x-1,start_y+1,1,{{start_x-1,start_y,2}}});
     } else if (phase == 2) {
         fixed_cells = generate_fixed_cells_phase2(start_x, start_y, field_size);
-        move_p = find_pair(field,{start_x,start_y-1});
-        queue.push_back({start_x+1,start_y+1,1,{{start_x,start_y-1,2}}});
+        move_p = find_pair(field,{start_x,start_y+1});
+        queue.push_back({start_x+1,start_y+1,1,{{start_x,start_y,2}}});
     } else {
         std::cerr << "Error: Unknown Phase " << phase << ". Please set PHASE to 1 or 2." << std::endl;
         exit(1);

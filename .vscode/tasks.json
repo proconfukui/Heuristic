@@ -89,7 +89,6 @@
                 "-o",
                 "./bin/main.exe",
                 "-g",
-                "-O3",
                 "-std=c++17"
             ],
             "group": "build",
