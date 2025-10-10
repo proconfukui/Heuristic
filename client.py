@@ -2,6 +2,7 @@ import socket
 import json
 import os
 import subprocess
+import sys
 from typing import Dict, Any
 
 # サーバーPCのIPアドレスとポート
@@ -52,14 +53,14 @@ def run_solver(match_info: Dict[str, Any]) -> Dict[str, Any]:
         return solution
 
     except FileNotFoundError:
-        print(f"エラー：ソルバーの実行ファイルが見つかりません")
+        print(f"エラー：ソルバーの実行ファイルが見つかりません", file=sys.stderr)
         return {}
     except subprocess.CalledProcessError as e:
-        print(f"エラー：コマンドが終了コード{e.returncode}で失敗")
+        print(f"エラー：コマンドが終了コード{e.returncode}で失敗", file=sys.stderr)
         print("ソルバーのエラー出力：", e.stderr)
         return {}
     except Exception as e:
-        print(f"エラー：{e}")
+        print(f"エラー：{e}", file=sys.stderr)
         return {}
 
 def main() -> None:
@@ -78,7 +79,7 @@ def main() -> None:
                     break
                 data += chunk
             if not data:
-                print("エラー：サーバーから受信ができませんでした")
+                print("エラー：サーバーから受信ができませんでした", file=sys.stderr)
                 return
             match_info: Dict[str, Any] = json.loads(data.decode("utf-8"))
             print("問題受信に成功")
@@ -99,7 +100,7 @@ def main() -> None:
                     print(solution)
                     print("解が生成されませんでした。再試行します。")
     except Exception as e:
-        print(f"エラー：{e}")
+        print(f"エラー：{e}", file=sys.stderr)
 
 if __name__ == "__main__":
     main()
