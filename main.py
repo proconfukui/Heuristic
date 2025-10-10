@@ -1,4 +1,4 @@
-import socket
+import glob
 import json
 import os
 import subprocess
@@ -8,7 +8,7 @@ import threading
 import time
 import requests
 import copy
-from typing import Dict, Any, Optional, Tuple, Union
+from typing import Dict, Any, Optional, Tuple
 
 # --- 定数定義 ---
 
@@ -82,6 +82,8 @@ def run_solver(weight_line: int) -> Optional[Dict[str, Any]]:
         cmd3 = f"{CREATE_ANSWER_JSON_PATH} {answer_path} < {answer_txt_path}"
         subprocess.run(cmd3, shell=True, check=True, capture_output=True, text=True, timeout=60)
 
+        print(f"[Worker PID:{pid}] コマンド実行完了 (WeightLine: {weight_line})")
+
         # 結果ファイルを読み込む
         with open(answer_path, 'r') as f:
             solution = json.load(f)
@@ -143,7 +145,7 @@ def submit_to_official_server(solution_to_submit: Dict[str, Any]):
     except requests.exceptions.RequestException as e:
         print(f"提出中に通信エラーが発生しました: {e}", file=sys.stderr)
 
-def wait_for_match_start(info: Dict[str, Any]):
+def wait_for_match_start(info: Optional[Dict[str, Any]]):
     """試合開始時刻まで待機する"""
     start_at_unix = info.get("startsAt", 0)
     current_unix = int(time.time())
@@ -252,6 +254,9 @@ def main():
         if os.path.exists(PROBLEM_PATH):
             os.remove(PROBLEM_PATH)
             print(f"'{PROBLEM_PATH}' を削除しました。")
+        for path in glob.glob("testcase/answer_*.json") + glob.glob("testcase/problem_*.txt") + glob.glob("testcase/answer_*.txt"):
+            os.remove(path)
+            print(f"'{path}' を削除しました。")
 
 if __name__ == "__main__":
     # Windowsでmultiprocessingを使用する際の定型句
