@@ -183,7 +183,7 @@ vector<vector<float>> add_matrix(const vector<vector<float>> &matrix1, const vec
       matrix[y][x] = matrix1[y][x] + matrix2[y][x];
     }
   }
-  print_matrix(matrix);
+  // print_matrix(matrix);
   return matrix;
 }
 

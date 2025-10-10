@@ -58,7 +58,7 @@ int main()
 
   // 処理の本体。時間を計測する
   auto begin_time = std::chrono::high_resolution_clock::now();
-  print_matrix(field);
+  // print_matrix(field);
   vector<Operation> answer;
 
   // //  端から揃える方法(ビームサーチ版)
@@ -108,8 +108,8 @@ int main()
     tmp_field = cut_field(tmp_field, 2, 2, tmp_field.size() - 2);
   }
 
-  cerr << "start beam_search" << endl;
-  print_matrix(tmp_field);
+  // cerr << "start beam_search" << endl;
+  // print_matrix(tmp_field);
 
 
 
@@ -135,7 +135,7 @@ int main()
 
 
   apply_ops(field, answer);
-  print_matrix(field);
+  // print_matrix(field);
   //---------------------------------------------------------------------------------------------------------------
 
     // float max_pair_num = field.size()*field.size()/2 +0.0;
@@ -171,8 +171,8 @@ int main()
 
   auto end_time = std::chrono::high_resolution_clock::now();
   auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - begin_time);
-  cerr << "exe_time: " << duration.count() << " ms" << endl;
-  print_matrix(field);
+  // cerr << "exe_time: " << duration.count() << " ms" << endl;
+  // print_matrix(field);
   print_answer(start_time, answer, original_field);
 }
 
@@ -282,7 +282,7 @@ vector<Operation> beam_search(const vector<vector<int>> &field, vector<float> we
     // commit_step回のステップにどれほど時間がかかるかを計測
     auto end_time = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - begin_time);
-    cerr << "exe_time: " << duration.count() << " ms" << endl;
+    // cerr << "exe_time: " << duration.count() << " ms" << endl;
     // timelocal.push_back(duration.count());
   }
   return answer;

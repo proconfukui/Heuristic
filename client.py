@@ -7,7 +7,8 @@ import multiprocessing
 from typing import Dict, Any
 
 # サーバーPCのIPアドレスとポート
-SERVER_HOST: str = "172.28.240.1"
+# TODO: 正式なものに書き換える
+SERVER_HOST: str = "172.28.240.1"  # サーバーの実際のIPアドレス
 SERVER_PORT: int = 8888
 
 # ソルバーで必要なファイルのパス
@@ -29,35 +30,17 @@ def run_solver(weight_line: int) -> Dict[str, Any]:
 
     try:
         # 一連のコマンドを実行
-        # 各コマンドをリストとして定義
-        cmd1 = [INPUT_PROBLEM_PATH, PROBLEM_PATH, WEIGHT_PATH, str(weight_line)]
-        cmd2 = [MAIN_CPP_PATH]
-        cmd3 = [CREATE_ANSWER_JSON_PATH, answer_path]
+        command = f"{MAIN_SHELL_PATH} {PROBLEM_PATH} {WEIGHT_PATH} {WEIGHT_START_LINE} {MAIN_CPP_PATH} | {CREATE_ANSWER_JSON_PATH} {ANSWER_PATH}"
+        print(f"コマンドを実行：{command}")
+        result = subprocess.run(command, shell=True, check=True, capture_output=True, text=True, timeout=600)  # タイムアウトを600秒(10分)に設定
+        print(result)
+        print("コマンドの実行完了")
 
-        print(f"[PID:{pid}] パイプラインを実行: {' '.join(cmd1)} | {' '.join(cmd2)} | {' '.join(cmd3)}")
-
-        # Popenを使ってパイプラインを構築
-        p1 = subprocess.Popen(cmd1, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-        p2 = subprocess.Popen(cmd2, stdin=p1.stdout, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-        # p1の標準出力をp2に渡したら、p1のstdoutは閉じる
-        if p1.stdout:
-            p1.stdout.close()
-        p3 = subprocess.Popen(cmd3, stdin=p2.stdout, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-        if p2.stdout:
-            p2.stdout.close()
-
-        # 最後のコマンドの出力を取得し、すべてのプロセスが終了するのを待つ
-        stdout3, stderr3 = p3.communicate()
-        _, stderr2 = p2.communicate()
-        _, stderr1 = p1.communicate()
-
-        # 各コマンドの終了コードをチェック
-        if p1.returncode != 0:
-            raise subprocess.CalledProcessError(p1.returncode, cmd1, stderr=stderr1)
-        if p2.returncode != 0:
-            raise subprocess.CalledProcessError(p2.returncode, cmd2, stderr=stderr2)
-        if p3.returncode != 0:
-            raise subprocess.CalledProcessError(p3.returncode, cmd3, stderr=stderr3)
+        # 標準出力や標準エラー出力を表示 (デバッグ用)
+        if result.stdout:
+            print("ソルバーの標準出力：", result.stdout)
+        if result.stderr:
+            print("ソルバーのエラー出力：", result.stderr)
 
         # 結果ファイルを読み込む
         with open(answer_path, 'r') as f:
