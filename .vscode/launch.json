@@ -89,6 +89,12 @@
             "postDebugTask": "rm-solver"
         },
         {
+            "name": "client Debug",
+            "type": "debugpy",
+            "program": "python",
+            "args": ["./client.py"],
+        },
+        {
             "name": "main Debug",
             "type": "cppdbg",
             "request": "launch",

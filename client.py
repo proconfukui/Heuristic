@@ -6,7 +6,7 @@ from typing import Dict, Any
 
 # サーバーPCのIPアドレスとポート
 # TODO: 正式なものに書き換える
-SERVER_HOST: str = "192.168.11.32"  # サーバーの実際のIPアドレス
+SERVER_HOST: str = "172.28.240.1"  # サーバーの実際のIPアドレス
 SERVER_PORT: int = 8888
 
 # ソルバーで必要なファイルのパス
@@ -96,6 +96,7 @@ def main() -> None:
                         sender_socket.sendall(json.dumps(solution).encode('utf-8'))
                     print("解をサーバーに送信完了")
                 else:
+                    print(solution)
                     print("解が生成されませんでした。再試行します。")
     except Exception as e:
         print(f"エラー：{e}")
