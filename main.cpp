@@ -79,7 +79,15 @@ int main()
   // -------------------------------------------------------------------------------------------------------
   // 端から揃える方法
   vector<vector<int>> tmp_field = field;
-  int chenge_point = 6;
+  int chenge_point = 0;
+  if (field.size() > 14)
+  {
+    chenge_point = 12;
+  }
+  else
+  {
+    chenge_point = field.size();
+  }
   int max_pair_number = field.size() * field.size() / 2;
   for (int layer = 0;field.size() - layer > chenge_point; layer += 2)
   {
