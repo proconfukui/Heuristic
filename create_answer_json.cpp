@@ -19,64 +19,54 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
-  int answer_count;
-  cin >> answer_count;
+  std::vector<Operation> data;
 
-  vector<int> pair_count(answer_count);
-  vector<vector<Operation>> ops_data(answer_count);
-  for (int answer_index = 0; answer_index < answer_count; answer_index++)
-  {
-    // 1行目をスキップ
-    int time;
-    cin >> time;
-    // 2行目からops数を読み取り
-    int ops_count;
-    cin >> ops_count;
-
-    // 指定された数だけOperationデータを読み取り
-    ops_data[answer_index] = vector<Operation>(ops_count);
-    for (int ops_index = 0; ops_index < ops_count; ops_index++)
-    {
-      int n, x, y;
-      cin >> n >> x >> y;
-      Operation op = {x, y, n};
-      ops_data[answer_index][ops_index] = op;
-    }
-    vector<vector<int>> field;
-    cin_field(field);
-    for (const auto &op : ops_data[answer_index])
-    {
-      rotate(field,op);
-    }
-    pair_count[answer_index] = count_pair(field);
+  // 標準入力から読み取り
+  std::string line;
+  
+  // 1行目をスキップ
+  if (std::getline(std::cin, line)) {
+    // 1行目は使用しない（必要に応じて処理）
   }
-
-  // 複数の解がある場合は、その中から最も良いものを選ぶ
-  int best_answer_index = 0;
-  for (int index = 1; index < answer_count; index++)
-  {
-    if (pair_count[index] > pair_count[best_answer_index])
-    {
-      best_answer_index = index;
-    }
-    else if (pair_count[index] == pair_count[best_answer_index] && ops_data[index].size() < ops_data[best_answer_index].size())
-    {
-      best_answer_index = index;
+  
+  // 2行目からops数を読み取り
+  int ops_count = 0;
+  if (std::getline(std::cin, line)) {
+    std::istringstream iss(line);
+    iss >> ops_count;
+  }
+  
+  // 指定された数だけOperationデータを読み取り
+  for (int i = 0; i < ops_count; i++) {
+    if (std::getline(std::cin, line)) {
+      std::istringstream iss(line);
+      int x, y, n;
+      
+      if (iss >> n >> x >> y) {
+        Operation op = {x,y,n};
+        data.push_back(op);
+      }
     }
   }
 
-  // // JSONに変換して出力
+  vector<vector<int>> field;
+  cin_field(field);
+  for(const auto& op : data){
+    rotate(field,op);
+  }
+
+  // JSONに変換して出力
   json j;
-  for (int ops_index = 0; ops_index < ops_data[best_answer_index].size(); ops_index++)
+  j["pair_count"] = count_pair(field);
+  for (int i = 0; i < ops_count; i++)
   {
-    j["ops"][ops_index]["x"] = ops_data[best_answer_index][ops_index].x;
-    j["ops"][ops_index]["y"] = ops_data[best_answer_index][ops_index].y;
-    j["ops"][ops_index]["n"] = ops_data[best_answer_index][ops_index].n;
+    j["ops"][i]["x"] = data[i].x;
+    j["ops"][i]["y"] = data[i].y;
+    j["ops"][i]["n"] = data[i].n;
   }
-  j["pair_count"] = pair_count[best_answer_index];
 
-  ofstream ofs(argv[1]);
-  ofs << j.dump(4) << endl;
+  std::ofstream ofs(argv[1]);
+  ofs << j.dump(4) << std::endl;
   ofs.close();
 
   return 0;
