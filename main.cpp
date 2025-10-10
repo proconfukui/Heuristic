@@ -52,7 +52,7 @@ int main()
   vector<vector<int>> field;
   vector<float> weights;
   initialize(start_time, field, weights);
-  initialize_evalutor(field, weights);
+
   // print_analysisで正しく解析できるよう、初期盤面を保持しておく
   vector<vector<int>> original_field = field;
 
@@ -79,9 +79,16 @@ int main()
   // -------------------------------------------------------------------------------------------------------
   // 端から揃える方法
   vector<vector<int>> tmp_field = field;
-  int chenge_point = 6;
+
+  int chenge_point = 0;
+  if(field.size() >14){
+    chenge_point = 12;
+  }else{
+    chenge_point = field.size();
+  }
+
   int max_pair_number = field.size() * field.size() / 2;
-  for (int layer = 0;field.size() - layer > chenge_point; layer += 2)
+  for (int layer = 0; field.size() - layer > chenge_point; layer += 2)
   {
     for (int y = 0; y <= 1; y++)
     {
@@ -111,26 +118,40 @@ int main()
   // cerr << "start beam_search" << endl;
   // print_matrix(tmp_field);
 
-
-
   vector<Operation> tmp_answer = {};
-  int new_max_pair_number = tmp_field.size() * tmp_field.size() /2 ;
-
-  vector<Operation> answer1 = beam_search(tmp_field, weights, 50, 50, 5, 300, 100, [new_max_pair_number](const vector<vector<int>> &field)
+  initialize_evalutor(tmp_field, weights);
+  int new_max_pair_number = tmp_field.size() * tmp_field.size() / 2;
+  if(chenge_point < 10){
+    vector<Operation> answer1 = beam_search(tmp_field, weights, 50, 50, 5, 300, 100, [new_max_pair_number](const vector<vector<int>> &field)
                                           { return count_pair(field) / new_max_pair_number > 0.8; }, [](const vector<vector<int>> &field)
                                           { return count_pair(field) * _weights[0] - measure_distance(field); });
-  apply_ops(tmp_field, answer1);
-  vector<Operation> answer2 = beam_search(tmp_field, weights, 100, 40, 3, 200, 100, [new_max_pair_number](const vector<vector<int>> &field)
+    apply_ops(tmp_field, answer1);
+    vector<Operation> answer2 = beam_search(tmp_field, weights, 100, 40, 3, 200, 100, [new_max_pair_number](const vector<vector<int>> &field)
                                           { return count_pair(field) / new_max_pair_number >= 1; }, [](const vector<vector<int>> &field)
                                           { return count_pair(field) * _weights[1] - measure_distance(field); });
 
-  tmp_answer.insert(tmp_answer.end(), answer1.begin(), answer1.end());
-  tmp_answer.insert(tmp_answer.end(), answer2.begin(), answer2.end());
+    tmp_answer.insert(tmp_answer.end(), answer1.begin(), answer1.end());
+    tmp_answer.insert(tmp_answer.end(), answer2.begin(), answer2.end());
 
+    vector<Operation> corrected_ops = correct_op(tmp_answer, field.size() - chenge_point, field.size() - chenge_point);
+    answer.insert(answer.end(), corrected_ops.begin(), corrected_ops.end());
+  }else{
 
-  vector<Operation> corrected_ops = correct_op(tmp_answer, field.size()-chenge_point, field.size()-chenge_point);
-  answer.insert(answer.end(), corrected_ops.begin(), corrected_ops.end());
+    4隅にペアを揃える
+    vector<Operation> answer1 = beam_search(field, weights, 200, 20, 4, 200, 0.20, 100,func1);
+    apply_ops(field,answer1);
 
+    // //端からペアを揃える
+    vector<Operation> answer2 = beam_search(field, weights, 200, 30, 4, 200, 0.8,100,func2);
+    apply_ops(field,answer2);
+
+    vector<Operation> answer4 = beam_search(field, weights, 200, 30, 1, 500, 1.0,100,func3);
+
+    answer1.insert(answer1.end(),answer2.begin(),answer2.end());
+    // answer1.insert(answer1.end(),answer3.begin(),answer3.end());
+    answer1.insert(answer1.end(),answer4.begin(),answer4.end());
+  }
+  
 
 
 
@@ -138,9 +159,9 @@ int main()
   // print_matrix(field);
   //---------------------------------------------------------------------------------------------------------------
 
-    // float max_pair_num = field.size()*field.size()/2 +0.0;
-    // ビームサーチによる探索
-    // 処理時間は幅に比例
+  // float max_pair_num = field.size()*field.size()/2 +0.0;
+  // ビームサーチによる探索
+  // 処理時間は幅に比例
   // float max_pair_number = field.size() * field.size() / 2 + 0.0;
 
   // vector<Operation> answer1 = beam_search(field, weights, 30, 50, 10, 200, 100, [&max_pair_number](const vector<vector<int>> &field)
@@ -176,20 +197,24 @@ int main()
   print_answer(start_time, answer, original_field);
 }
 
-
-
-
 // ビームサーチ
 vector<Operation> beam_search(const vector<vector<int>> &field, vector<float> weights, int depth, int width, int commit_step, int num_sample, int max_time, const function<bool(vector<vector<int>> &)> &judge, const function<float(vector<vector<int>> &)> &evaluator)
 {
-  auto is_valid_op_for_field = [](const vector<vector<int>> &f, const Operation &op) -> bool {
-    if (op.n < 2) return false;
+  auto is_valid_op_for_field = [](const vector<vector<int>> &f, const Operation &op) -> bool
+  {
+    if (op.n < 2)
+      return false;
     int N = static_cast<int>(f.size());
-    if (N <= 0) return false;
-    if (op.x < 0 || op.y < 0) return false;
-    if (op.x >= N || op.y >= N) return false;
-    if (op.x + op.n > N) return false;
-    if (op.y + op.n > N) return false;
+    if (N <= 0)
+      return false;
+    if (op.x < 0 || op.y < 0)
+      return false;
+    if (op.x >= N || op.y >= N)
+      return false;
+    if (op.x + op.n > N)
+      return false;
+    if (op.y + op.n > N)
+      return false;
     return true;
   };
   vector<vector<int>> tmp_field = field;
@@ -229,7 +254,8 @@ vector<Operation> beam_search(const vector<vector<int>> &field, vector<float> we
         for (const auto &op : candidates)
         {
           // 安全性チェック（範囲外アクセスによるヒープ破損を防ぐ）
-          if (!is_valid_op_for_field(node.field, op)) {
+          if (!is_valid_op_for_field(node.field, op))
+          {
             continue;
           }
           vector<vector<int>> work_field = node.field; // コピーを作成
