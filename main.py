@@ -13,8 +13,8 @@ from typing import Dict, Any, Optional, Tuple
 # --- 定数定義 ---
 
 # サーバー/API関連
-API_URL: str = "http://localhost:3000"  # 競技サーバー用APIのURL
-TOKEN: str = "player1"  # 認証トークン
+API_URL: str = "http://172.19.0.1:80/"  # 競技サーバー用APIのURL
+TOKEN: str = "fukuid01bdb9d3e3c85f604f57ebc2994279f621a0233021aaa52ca082a832df"  # 認証トークン
 
 # ソルバーで必要なファイルのパス
 PROBLEM_PATH: str = "testcase/problem.json"
@@ -112,9 +112,9 @@ def fetch_match_info() -> bool:
     """競技サーバーから試合情報を取得し、グローバル変数に格納する"""
     global match_info
     try:
-        print(f"{API_URL}/ から試合情報を取得中...")
+        print(f"{API_URL} から試合情報を取得中...")
         headers: Dict[str, str] = {"Procon-Token": TOKEN}
-        response: requests.Response = requests.get(f"{API_URL}/", headers=headers)
+        response: requests.Response = requests.get(API_URL, headers=headers)
         response.raise_for_status()
         data: Dict[str, Any] = response.json()
         with lock:
@@ -134,7 +134,7 @@ def submit_to_official_server(solution_to_submit: Dict[str, Any]):
     print("現在の最良解を競技サーバーに提出します...")
     headers: Dict[str, str] = {"Procon-Token": TOKEN}
     try:
-        response = requests.post(f"{API_URL}/", json=solution_to_submit, headers=headers)
+        response = requests.post(API_URL, json=solution_to_submit, headers=headers)
         if response.status_code == 200:
             response_data = response.json()
             revision = response_data.get("revision", -1)
