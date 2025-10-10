@@ -49,15 +49,9 @@ int main(int argc, char* argv[]) {
     }
   }
 
-  vector<vector<int>> field;
-  cin_field(field);
-  for(const auto& op : data){
-    rotate(field,op);
-  }
 
   // JSONに変換して出力
   json j;
-  j["pair_count"] = count_pair(field);
   for (int i = 0; i < ops_count; i++)
   {
     j["ops"][i]["x"] = data[i].x;
