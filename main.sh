@@ -26,7 +26,7 @@ esac
 for i in `seq 1 $CORE_NUM`
 do
   ./bin/input_problem.exe $1 $2 $((i+$3-1)) | \
-    ./bin/main.exe  > "output_$i.txt" &
+    ./bin/main.exe  > "output_$i.txt" 2> "error/error_$i.txt" &
 done
 
 wait

@@ -7,7 +7,7 @@ from typing import Dict, Any
 
 # サーバーPCのIPアドレスとポート
 # TODO: 正式なものに書き換える
-SERVER_HOST: str = "192.168.11.32"  # サーバーの実際のIPアドレス
+SERVER_HOST: str = "172.28.240.1"  # サーバーの実際のIPアドレス
 SERVER_PORT: int = 8888
 
 # ソルバーで必要なファイルのパス
@@ -35,7 +35,8 @@ def run_solver(match_info: Dict[str, Any]) -> Dict[str, Any]:
         # 一連のコマンドを実行
         command = f"{MAIN_SHELL_PATH} {PROBLEM_PATH} {WEIGHT_PATH} {WEIGHT_START_LINE} {MAIN_CPP_PATH} | {CREATE_ANSWER_JSON_PATH} {ANSWER_PATH}"
         print(f"コマンドを実行：{command}")
-        result = subprocess.run(command, shell=True, check=True, capture_output=True, text=True)
+        result = subprocess.run(command, shell=True, check=True, capture_output=True, text=True, timeout=600)  # タイムアウトを600秒(10分)に設定
+        print(result)
         print("コマンドの実行完了")
 
         # 標準出力や標準エラー出力を表示 (デバッグ用)
