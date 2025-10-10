@@ -7,7 +7,7 @@ import multiprocessing
 from typing import Dict, Any
 
 # サーバーPCのIPアドレスとポート
-SERVER_HOST: str = "192.168.11.32"
+SERVER_HOST: str = "172.28.240.1"
 SERVER_PORT: int = 8888
 
 # ソルバーで必要なファイルのパス
