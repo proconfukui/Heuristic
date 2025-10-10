@@ -121,7 +121,7 @@ int main()
   vector<Operation> tmp_answer = {};
   initialize_evalutor(tmp_field, weights);
   int new_max_pair_number = tmp_field.size() * tmp_field.size() / 2;
-  if(chenge_point < 10){
+  // if(chenge_point < 10){
     vector<Operation> answer1 = beam_search(tmp_field, weights, 50, 50, 5, 300, 100, [new_max_pair_number](const vector<vector<int>> &field)
                                           { return count_pair(field) / new_max_pair_number > 0.8; }, [](const vector<vector<int>> &field)
                                           { return count_pair(field) * _weights[0] - measure_distance(field); });
@@ -135,22 +135,22 @@ int main()
 
     vector<Operation> corrected_ops = correct_op(tmp_answer, field.size() - chenge_point, field.size() - chenge_point);
     answer.insert(answer.end(), corrected_ops.begin(), corrected_ops.end());
-  }else{
+  // }else{
 
-    4隅にペアを揃える
-    vector<Operation> answer1 = beam_search(field, weights, 200, 20, 4, 200, 0.20, 100,func1);
-    apply_ops(field,answer1);
+  //   4隅にペアを揃える
+  //   vector<Operation> answer1 = beam_search(field, weights, 200, 20, 4, 200, 0.20, 100,func1);
+  //   apply_ops(field,answer1);
 
-    // //端からペアを揃える
-    vector<Operation> answer2 = beam_search(field, weights, 200, 30, 4, 200, 0.8,100,func2);
-    apply_ops(field,answer2);
+  //   // //端からペアを揃える
+  //   vector<Operation> answer2 = beam_search(field, weights, 200, 30, 4, 200, 0.8,100,func2);
+  //   apply_ops(field,answer2);
 
-    vector<Operation> answer4 = beam_search(field, weights, 200, 30, 1, 500, 1.0,100,func3);
+  //   vector<Operation> answer4 = beam_search(field, weights, 200, 30, 1, 500, 1.0,100,func3);
 
-    answer1.insert(answer1.end(),answer2.begin(),answer2.end());
-    // answer1.insert(answer1.end(),answer3.begin(),answer3.end());
-    answer1.insert(answer1.end(),answer4.begin(),answer4.end());
-  }
+  //   answer1.insert(answer1.end(),answer2.begin(),answer2.end());
+  //   // answer1.insert(answer1.end(),answer3.begin(),answer3.end());
+  //   answer1.insert(answer1.end(),answer4.begin(),answer4.end());
+  // }
   
 
 
