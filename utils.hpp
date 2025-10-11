@@ -68,8 +68,7 @@ struct Field {
             data.reserve(size * size);
             for (const auto& row : field2d) {
                 data.insert(data.end(), row.begin(), row.end());
-       光速か
-      }
+            }
         }
     }
 
@@ -78,21 +77,24 @@ struct Field {
 };
 
 struct BeamNode {
-    Field field;
-    vector<Operation> ops;
+    Operation op;
     int score;
-    
-    // デフォルトコンストラクタ
-    BeamNode() : score(0) {}
-    
-    // コンストラクタ
-    BeamNode(const Field& f, const vector<Operation>& o, int s)
-        : field(f), ops(o), score(s) {}
-    
-    BeamNode(Field&& f, vector<Operation>&& o, int s)
-        : field(std::move(f)), ops(std::move(o)), score(s) {}
+    int parent_index; // 親ノードのインデックス
+    std::shared_ptr<const Field> field_ptr;
 
-    // 明示的なムーブ/コピー（realloc時にムーブが優先されるようにnoexceptを付与）
+    // デフォルトコンストラクタ
+    BeamNode() : score(0), parent_index(-1) {}
+
+    // コンストラクタ
+    BeamNode(const Operation& o, int s, int p_idx, std::shared_ptr<const Field> f_ptr)
+        : op(o), score(s), parent_index(p_idx), field_ptr(std::move(f_ptr)) {}
+
+    // priority_queueのために<演算子を定義
+    bool operator<(const BeamNode& other) const {
+        return score < other.score;
+    }
+
+    // デフォルトのコピー、ムーブコンストラクタ、代入演算子で問題ない
     BeamNode(const BeamNode&) = default;
     BeamNode& operator=(const BeamNode&) = default;
     BeamNode(BeamNode&&) noexcept = default;
