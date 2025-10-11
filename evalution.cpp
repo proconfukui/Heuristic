@@ -244,7 +244,7 @@ int evaluate_edge_pairs(const vector<vector<int>>& field, int edge_weight)
             {
                 int penalty = (min(x, field_size - 1 - x) + min(y, field_size - 1 - y) +
                                min(x + 1, field_size - 1 - (x + 1)) + min(y, field_size - 1 - y));
-                total_score += _weights[1] - edge_weight * penalty;
+                total_score += _weights[2] - edge_weight * penalty * penalty;
             }
         }
     }
@@ -258,7 +258,7 @@ int evaluate_edge_pairs(const vector<vector<int>>& field, int edge_weight)
             {
                 int penalty = (min(x, field_size - 1 - x) + min(y, field_size - 1 - y) +
                                min(x, field_size - 1 - x) + min(y + 1, field_size - 1 - (y + 1)));
-                total_score += _weights[1] - edge_weight * penalty;
+                total_score += _weights[2] - edge_weight * penalty * penalty;
             }
         }
     }

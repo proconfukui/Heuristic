@@ -26,6 +26,16 @@ struct Operation
     }
 };
 
+struct OperationHash {
+    std::size_t operator()(const Operation& op) const {
+        // 簡単なハッシュ関数。より良いハッシュ関数も検討可能
+        auto h1 = std::hash<int>{}(op.x);
+        auto h2 = std::hash<int>{}(op.y);
+        auto h3 = std::hash<int>{}(op.n);
+        return h1 ^ (h2 << 1) ^ (h3 << 2);
+    }
+};
+
 struct Point {
     int x, y;
 
@@ -81,4 +91,3 @@ struct State {
         return f > other.f;
     }
 };
-
