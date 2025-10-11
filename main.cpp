@@ -36,11 +36,11 @@ using std::unordered_set;
 using std::vector;
 
 void initialize(int &start_time, vector<vector<int>> &field, vector<int> &weights);
-void print_answer(int time, const vector<Operation> &ops, const vector<vector<int>> &field);
-vector<Operation> beam_search(const vector<vector<int>> &field, vector<int> weights, int depth, int width, int commit_step, int num_sample, int max_time, const function<bool(vector<vector<int>> &)> &judge, const function<int(vector<vector<int>> &)> &evaluator);
-vector<Operation> best_operations_random(const vector<vector<int>> &field, int num_sample, int width, const function<int(vector<vector<int>> &)> &evaluator);
-vector<Operation> best_operations_random2(const vector<vector<int>> &field, int num_sample, int width, const function<int(vector<vector<int>> &)> &evaluator);
-vector<Operation> a_star(vector<vector<int>> field, const function<int(vector<vector<int>> &)> &evaluator);
+void print_answer(int time, const vector<Operation>& ops, const vector<vector<int>>& field);
+vector<Operation> beam_search(const vector<vector<int>>& field, vector<int> weights, int depth, int width, int commit_step, int num_sample, int max_time, double random_injection_rate, const function<bool(vector<vector<int>>&)>& judge, const function<int(const vector<vector<int>>&)>& evaluator);
+vector<Operation> best_operations_random(const vector<vector<int>>& field, int num_sample, int width, const function<int(const vector<vector<int>>&)>& evaluator);
+vector<Operation> best_operations_random2(const vector<vector<int>>& field, int num_sample, int width, double random_injection_rate, const function<int(const vector<vector<int>>&)>& evaluator);
+vector<Operation> a_star(const vector<vector<int>>& field, const vector<int>& weights, const function<int(const vector<vector<int>>&)>& evaluator);
 
 int main()
 {
@@ -74,7 +74,7 @@ int main()
           vector<vector<int>> sub_field = cut_field(field, offset, offset, current_size);
 
           vector<Operation> rim_ops = beam_search(
-              sub_field, weights, 50, 40, 5, 200, 150,
+              sub_field, weights, 50, 40, 5, 200, 150, 0.1,
               [&](vector<vector<int>>& f) {
                   return check_outer_rim_filled(f);
               },
@@ -92,12 +92,12 @@ int main()
       // --- フェーズ2: 中央の16x16を解く ---
       cerr << "Solving center 16x16..." << endl;
       vector<vector<int>> center_field = cut_field(field, offset, offset, 16);
-      vector<Operation> center_ops_1 = beam_search(center_field, weights, 70, 40, 5, 200, 100, 
+      vector<Operation> center_ops_1 = beam_search(center_field, weights, 70, 40, 5, 200, 100, 0.1,
           [](const vector<vector<int>> &f){ return 100 * count_pair(f) / (16*16/2) > 80; },
-          [](const vector<vector<int>> &f){ return count_pair(f) * _weights[0] - measure_distance(f); }
+          [](const vector<vector<int>>& f){ return count_pair(f) * _weights[0] - measure_distance(f); }
       );
       apply_ops(center_field, center_ops_1);
-      vector<Operation> center_ops_2 = beam_search(center_field, weights, 100, 60, 5, 200, 100, 
+      vector<Operation> center_ops_2 = beam_search(center_field, weights, 100, 60, 5, 200, 100, 0.0,
           [](const vector<vector<int>> &f){ return check_all_pair(f); },
           [](const vector<vector<int>> &f){ return count_pair(f) * _weights[0] - measure_distance(f); }
       );
@@ -109,7 +109,7 @@ int main()
 
   } else {
       // --- 既存のアルゴリズム (フィールドサイズ < 16 の場合) ---
-      auto dynamic_evaluator = [max_pair_number](const vector<vector<int>> &f) {
+      auto dynamic_evaluator = [max_pair_number](const vector<vector<int>>& f) {
           int pairs = count_pair(f);
           double progress = (max_pair_number > 0) ? static_cast<double>(pairs) / max_pair_number : 0.0;
 
@@ -140,16 +140,9 @@ int main()
           );
       };
 
-      vector<Operation> answer1 = beam_search(field, weights, 50, 30, 5, 200, 100,
-          [max_pair_number](const vector<vector<int>> &f){ return (max_pair_number > 0) && (100 * count_pair(f) / max_pair_number > 80); },
-          dynamic_evaluator);
-      apply_ops(field, answer1);
-      vector<Operation> answer2 = beam_search(field, weights, 100, 60, 5, 200, 100,
-          [](const vector<vector<int>> &f){ return check_all_pair(f); },
-          dynamic_evaluator);
-
-      answer.insert(answer.end(), answer1.begin(), answer1.end());
-      answer.insert(answer.end(), answer2.begin(), answer2.end());
+      // A*探索を呼び出す
+      vector<Operation> a_star_answer = a_star(field, weights, dynamic_evaluator);
+      answer.insert(answer.end(), a_star_answer.begin(), a_star_answer.end());
   }
 
   // ---------------------------------------------------------------------------------------------------------------------------------
@@ -162,7 +155,7 @@ int main()
 }
 
 // ビームサーチ
-vector<Operation> beam_search(const vector<vector<int>> &field, vector<int> weights, int depth, int width, int commit_step, int num_sample, int max_time, const function<bool(vector<vector<int>> &)> &judge, const function<int(vector<vector<int>> &)> &evaluator)
+vector<Operation> beam_search(const vector<vector<int>>& field, vector<int> weights, int depth, int width, int commit_step, int num_sample, int max_time, double random_injection_rate, const function<bool(vector<vector<int>>&)>& judge, const function<int(const vector<vector<int>>&)>& evaluator)
 {
   auto is_valid_op_for_field = [](const vector<vector<int>> &f, const Operation &op) -> bool
   {
@@ -198,6 +191,13 @@ vector<Operation> beam_search(const vector<vector<int>> &field, vector<int> weig
 
   for (int i = 0; i < max_time; i++)
   {
+    // --- 進行度に応じたパラメータ計算 ---
+    double progress_ratio = static_cast<double>(i) / max_time;
+    // depthは徐々に深く、widthは徐々に狭くする
+    int dynamic_depth = depth + static_cast<int>(progress_ratio * depth); // 例: depth -> 2*depth
+    int dynamic_width = width - static_cast<int>(progress_ratio * (width / 2)); // 例: width -> width/2
+    dynamic_width = std::max(1, dynamic_width); // 最小でも1は保証
+
     // commit_step回のステップにどれほど時間がかかるかを計測
     cerr << "time :" << i * commit_step << endl;
     auto begin_time = std::chrono::high_resolution_clock::now();
@@ -207,7 +207,7 @@ vector<Operation> beam_search(const vector<vector<int>> &field, vector<int> weig
     nodes.clear();
     nodes.emplace_back(tmp_field, vector<Operation>{}, evaluator(tmp_field));
 
-    for (int d = 0; d < depth; d++)
+    for (int d = 0; d < dynamic_depth; d++)
     {
       // 層ごとに next_nodes を作成し直す（ムーブ後のクリア等によるライフタイム問題を回避）
       vector<BeamNode> next_nodes;
@@ -216,7 +216,7 @@ vector<Operation> beam_search(const vector<vector<int>> &field, vector<int> weig
       // next_nodeに新しい生成されるnodeを作る
       for (const auto &node : nodes)
       {
-        candidates = best_operations_random2(node.field, num_sample, width, evaluator);
+        candidates = best_operations_random2(node.field, num_sample, width, random_injection_rate, evaluator);
         for (const auto &op : candidates)
         {
           // 安全性チェック（範囲外アクセスによるヒープ破損を防ぐ）
@@ -244,14 +244,14 @@ vector<Operation> beam_search(const vector<vector<int>> &field, vector<int> weig
       }
 
       // next_nodeから評価値の高いwidth個のnodeを抽出
-      if (next_nodes.size() > width)
+      if (next_nodes.size() > static_cast<size_t>(dynamic_width))
       {
-        partial_sort(next_nodes.begin(), next_nodes.begin() + width, next_nodes.end(),
+        partial_sort(next_nodes.begin(), next_nodes.begin() + dynamic_width, next_nodes.end(),
                      [](const BeamNode &a, const BeamNode &b)
                      {
                        return a.score > b.score;
                      });
-        next_nodes.resize(width);
+        next_nodes.resize(dynamic_width);
       }
       nodes = std::move(next_nodes);
     }
@@ -352,7 +352,7 @@ vector<Operation> best_operations_random(const vector<vector<int>> &field, int n
 }
 
 // 2.2 別アルゴリズム版: 全手を列挙→シャッフル→上からnum_sample個を評価し、上位width手を返す
-vector<Operation> best_operations_random2(const vector<vector<int>> &field, int num_sample, int width, const function<int(vector<vector<int>> &)> &evaluator)
+vector<Operation> best_operations_random2(const vector<vector<int>>& field, int num_sample, int width, double random_injection_rate, const function<int(const vector<vector<int>>&)>& evaluator)
 {
   int field_size = field.size();
   // 全手を列挙
@@ -387,15 +387,19 @@ vector<Operation> best_operations_random2(const vector<vector<int>> &field, int 
     scored.emplace_back(sc, op);
   }
 
-  // 上位width件を抽出
-  if (width > static_cast<int>(scored.size()))
+  // 評価上位の手とランダムな手を組み合わせる
+  int random_injection_count = static_cast<int>(width * random_injection_rate);
+  int top_k_count = width - random_injection_count;
+
+  // 評価上位の手を抽出
+  if (top_k_count > static_cast<int>(scored.size()))
   {
-    width = static_cast<int>(scored.size());
+    top_k_count = static_cast<int>(scored.size());
   }
-  if (width > 0)
+  if (top_k_count > 0)
   {
     // 部分ソートで上位のみ確定（降順）
-    std::partial_sort(scored.begin(), scored.begin() + width, scored.end(),
+    std::partial_sort(scored.begin(), scored.begin() + top_k_count, scored.end(),
                       [](const pair<int, Operation> &a, const pair<int, Operation> &b)
                       {
                         return a.first > b.first;
@@ -403,21 +407,38 @@ vector<Operation> best_operations_random2(const vector<vector<int>> &field, int 
   }
 
   vector<Operation> result;
-  result.reserve(width);
-  for (int i = 0; i < width; ++i)
+  result.reserve(width + random_injection_count); // 念のため少し多めに確保
+
+  // 上位の手を追加
+  for (int i = 0; i < top_k_count; ++i)
   {
     result.push_back(scored[i].second);
   }
+
+  // ランダムな手を追加
+  if (random_injection_count > 0) {
+    unordered_set<Operation, OperationHash> used_ops;
+    for(const auto& op : result) {
+        used_ops.insert(op);
+    }
+    // 評価に使われなかった手の中からランダムに追加
+    for (int i = num_sample; i < all_ops.size() && static_cast<int>(result.size()) < width; ++i) {
+        if (used_ops.find(all_ops[i]) == used_ops.end()) {
+            result.push_back(all_ops[i]);
+        }
+    }
+  }
+
   return result;
 }
 
-vector<Operation> a_star(vector<vector<int>> field, const function<int(vector<vector<int>> &)> &evaluator)
+vector<Operation> a_star(const vector<vector<int>>& field, const vector<int>& weights, const function<int(const vector<vector<int>>&)>& evaluator)
 {
   int field_size = field.size();
   priority_queue<State> pq;
   unordered_set<size_t> visited; // 状態のハッシュ値で管理
 
-  int h0 = evaluator(field);
+  int h0 = -evaluator(field); // スコアをコストに変換（符号反転）
   pq.push(State{field, {}, 0, h0, h0});
 
   int max_pair_number = field_size * field_size / 2;
@@ -460,7 +481,7 @@ vector<Operation> a_star(vector<vector<int>> field, const function<int(vector<ve
       rotate(next_field, op);
 
       int g = cur.g + 1; // 1手進めた
-      int h = evaluator(next_field);
+      int h = -evaluator(next_field); // スコアをコストに変換（符号反転）
       vector<Operation> next_ops = cur.ops;
       next_ops.push_back(op);
 
