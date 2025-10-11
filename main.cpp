@@ -109,10 +109,6 @@ int main()
 
   } else {
       // --- 既存のアルゴリズム (フィールドサイズ < 16 の場合) ---
-      vector<Operation> answer1 = beam_search(field, weights, 120, 30, 3, 200, 100, 0,
-          [max_pair_number](const vector<vector<int>> &f){ return 100 * count_pair(f) / max_pair_number > 30; },
-          [&weights, &field](const vector<vector<int>> &f){ return evaluate_edge_pairs(field, 1) * weights[1] - measure_distance(f); });
-      apply_ops(field, answer1);
       vector<Operation> answer2 = beam_search(field, weights, 200, 50, 2, 300, 200, 5,check_all_pair,
           [&weights](const vector<vector<int>> &f){ return count_pair(f) * weights[0] - measure_distance(f); });
       apply_ops(field, answer2);
@@ -120,7 +116,7 @@ int main()
       vector<Operation> answer3 = beam_search(field, weights, 200, 30, 2, 300, 200, 5,check_all_pair,
           [&weights](const vector<vector<int>> &f){ return count_pair(f) * weights[0] - measure_distance(f); });
 
-      answer.insert(answer.end(), answer1.begin(), answer1.end());
+      //answer.insert(answer.end(), answer1.begin(), answer1.end());
       answer.insert(answer.end(), answer2.begin(), answer2.end());
       answer.insert(answer.end(), answer3.begin(), answer3.end());
   }
