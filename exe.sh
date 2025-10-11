@@ -1,0 +1,1 @@
+./main.sh testcase/problem.json testcase/weights.txt 1 ./bin/main.exe 

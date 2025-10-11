@@ -10,7 +10,7 @@
 using json = nlohmann::ordered_json;
 using namespace std;
 
-void cin_field(vector<vector<int>> &field);
+void cin_field(Field& field);
 
 // コマンドライン引数は1つ。この引数で指定したパスにjsonファイルを出力する
 int main(int argc, char* argv[]) {
@@ -49,15 +49,9 @@ int main(int argc, char* argv[]) {
     }
   }
 
-  vector<vector<int>> field;
-  cin_field(field);
-  for(const auto& op : data){
-    rotate(field,op);
-  }
 
   // JSONに変換して出力
   json j;
-  j["pair_count"] = count_pair(field);
   for (int i = 0; i < ops_count; i++)
   {
     j["ops"][i]["x"] = data[i].x;
@@ -72,17 +66,18 @@ int main(int argc, char* argv[]) {
   return 0;
 }
 
-void cin_field(vector<vector<int>> &field)
+void cin_field(Field& field)
 {
   int field_size;
   cin >> field_size;
+  field = Field(field_size);
   for (int i = 0; i < field_size; i++)
   {
-    vector<int> row(field_size);
     for (int j = 0; j < field_size; j++)
     {
-      cin >> row[j];
+      int val;
+      cin >> val;
+      field.at(i, j) = val;
     }
-    field.push_back(row);
   }
 }
