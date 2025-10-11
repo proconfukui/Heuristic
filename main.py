@@ -82,8 +82,6 @@ def run_solver(weight_line: int) -> Optional[Dict[str, Any]]:
         cmd3 = f"{CREATE_ANSWER_JSON_PATH} {answer_path} < {answer_txt_path}"
         subprocess.run(cmd3, shell=True, check=True, capture_output=True, text=True, timeout=60)
 
-        print(f"[Worker PID:{pid}] コマンド実行完了 (WeightLine: {weight_line})")
-
         # 結果ファイルを読み込む
         with open(answer_path, 'r') as f:
             solution = json.load(f)
@@ -145,7 +143,7 @@ def submit_to_official_server(solution_to_submit: Dict[str, Any]):
     except requests.exceptions.RequestException as e:
         print(f"提出中に通信エラーが発生しました: {e}", file=sys.stderr)
 
-def wait_for_match_start(info: Optional[Dict[str, Any]]):
+def wait_for_match_start(info: Dict[str, Any]):
     """試合開始時刻まで待機する"""
     start_at_unix = info.get("startsAt", 0)
     current_unix = int(time.time())
@@ -192,14 +190,15 @@ def main():
         print("プログラムを終了します。", file=sys.stderr)
         return
 
-    # 2. problem.json を作成
+    # 2. 試合開始まで待機
+    wait_for_match_start(match_info)
+
+    # 3. problem.json を作成
     os.makedirs("testcase", exist_ok=True)
+    fetch_match_info() # 試合開始までフィールドは公開されないので、もう一回試合情報を読み込む
     with open(PROBLEM_PATH, 'w') as f:
         json.dump(match_info, f, indent=4)
     print(f"'{PROBLEM_PATH}' に試合情報を書き込みました。")
-
-    # 3. 試合開始まで待機
-    wait_for_match_start(match_info)
 
     # 4. 並列処理でソルバーを実行
     # メインプロセス用に1コア空ける
@@ -212,7 +211,7 @@ def main():
 
     pool = multiprocessing.Pool(processes=num_workers)
     for line in weight_lines:
-        pool.apply_async(run_solver, args=line, callback=update_best_solution)
+        pool.apply_async(run_solver, args=(line,), callback=update_best_solution)
     
     pool.close() # 新しいタスクの受付を終了
 
