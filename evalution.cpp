@@ -37,39 +37,38 @@ void initialize_evalutor(const Field& field, const vector<int> &weigths)
 // ペア候補間の距離を測定する
 // テスト済
 int measure_distance(const Field& field)
-{
-  // ラベル値（number）がサブフィールドでは連続かつ小さいとは限らないため、
-  // 動的なマップで最初の出現座標を保持し、2回目で距離を加算する。
-  int field_size = field.size;
-  const int n = field_size;
-  if (n <= 0)
-    return 0;
-
-  std::unordered_map<int, std::pair<int, int>> first_pos;
-  first_pos.reserve(n * n / 2);
-
-  int total = 0;
-  for (int y = 0; y < n; ++y)
-  {
-    for (int x = 0; x < n; ++x)
-    {
-      int number = field.at(y, x);
-      auto it = first_pos.find(number);
-      if (it == first_pos.end())
-      {
-        first_pos.emplace(number, std::make_pair(x, y));
-      }
-      else
-      {
-        int dx = it->second.first - x;
-        int dy = it->second.second - y;
-        total += dx * dx + dy * dy;
-        // 必要なら消してもよいが、2回出現想定なので放置でも可
-      }
-    }
-  }
-  return total;
-}
+ {
+     const int n = field.size;
+     if (n <= 0)
+         return 0;
+ 
+     const int max_pair_number = (n * n) / 2;
+ 
+     // ペアの最初の出現位置を保持するための静的ベクタ
+     // -1で初期化されているかどうかで、すでに出現したかを判断
+     static vector<Point> first_pos;
+     if (static_cast<int>(first_pos.size()) < max_pair_number) {
+         first_pos.resize(max_pair_number);
+     }
+     std::fill(first_pos.begin(), first_pos.begin() + max_pair_number, Point{-1, -1});
+ 
+     int total_distance = 0;
+     for (int i = 0; i < n * n; ++i) {
+         int number = field.data[i];
+         if (number >= 0 && number < max_pair_number) {
+             if (first_pos[number].x == -1) {
+                 first_pos[number] = {i % n, i / n};
+             } else {
+                 int x = i % n;
+                 int y = i / n;
+                 int dx = first_pos[number].x - x;
+                 int dy = first_pos[number].y - y;
+                 total_distance += dx * dx + dy * dy;
+             }
+         }
+     }
+     return total_distance;
+ }
 
 // // ペア候補間の距離を測定する（高速版: 1パス・動的配列の再利用）
 // int measure_distance(const vector<vector<int>> &field)
@@ -268,25 +267,26 @@ int evaluate_edge_pairs(const Field& field, int edge_weight)
 int count_weighted_pair(const Field& field, const vector<int>& weight_matrix)
 {
   int field_size = field.size;
+  if (field_size <= 1) return 0;
+
   int counter = 0;
-  for (int y = 0; y < field_size; y++)
-  {
-    for (int x = 0; x < field_size - 1; x++)
-    {
-      if (field.at(y, x) == field.at(y, x + 1))
-      {
-        counter += weight_matrix[y * field_size + x] + weight_matrix[y * field_size + x + 1];
+  const auto& data = field.data;
+
+  // 水平方向
+  for (int y = 0; y < field_size; ++y) {
+    int row_start = y * field_size;
+    for (int x = 0; x < field_size - 1; ++x) {
+      int idx = row_start + x;
+      if (data[idx] == data[idx + 1]) {
+        counter += weight_matrix[idx] + weight_matrix[idx + 1];
       }
     }
   }
-  for (int y = 0; y < field_size - 1; y++)
-  {
-    for (int x = 0; x < field_size; x++)
-    {
-      if (field.at(y, x) == field.at(y + 1, x))
-      {
-        counter += weight_matrix[y * field_size + x] + weight_matrix[(y + 1) * field_size + x];
-      }
+
+  // 垂直方向
+  for (int i = 0; i < field_size * (field_size - 1); ++i) {
+    if (data[i] == data[i + field_size]) {
+      counter += weight_matrix[i] + weight_matrix[i + field_size];
     }
   }
   return counter;
@@ -339,25 +339,73 @@ int evaluate_outer_rim_pairs(const Field& field)
         return 0;
     };
 
+    const auto& data = field.data;
     // 水平方向のペアをチェック
-    for (int y = 0; y < field_size; ++y)
-    {
-        for (int x = 0; x < field_size - 1; ++x)
-        {
-            if (field.at(y, x) == field.at(y, x + 1) && (y < 4 || y >= field_size - 4 || x < 4 || x >= field_size - 4 -1)) {
+    for (int y = 0; y < field_size; ++y) {
+        int row_start = y * field_size;
+        for (int x = 0; x < field_size - 1; ++x) {
+            int idx = row_start + x;
+            if (data[idx] == data[idx + 1] && (y < 4 || y >= field_size - 4 || x < 4 || x >= field_size - 4 -1)) {
                 total_score += get_rim_weight(y) * 2 + get_rim_weight(x) + get_rim_weight(x + 1);
             }
         }
     }
 
     // 垂直方向のペアをチェック
-    for (int y = 0; y < field_size - 1; ++y)
-    {
-        for (int x = 0; x < field_size; ++x)
-        {
-            if (field.at(y, x) == field.at(y + 1, x) && (y < 4 || y >= field_size - 4 -1 || x < 4 || x >= field_size - 4)) {
+    for (int y = 0; y < field_size - 1; ++y) {
+        int row_start = y * field_size;
+        for (int x = 0; x < field_size; ++x) {
+            int idx = row_start + x;
+            if (data[idx] == data[idx + field_size] && (y < 4 || y >= field_size - 4 -1 || x < 4 || x >= field_size - 4)) {
                 total_score += get_rim_weight(x) * 2 + get_rim_weight(y) + get_rim_weight(y + 1);
             }
+        }
+    }
+
+    return static_cast<int>(total_score);
+}
+
+// 中心からの距離に基づいてペアを評価する関数
+// 探索の進行度(progress)に応じて、評価の重点を外側から内側へ動的にシフトさせる
+int evaluate_by_distance_from_center(const Field& field, double progress) {
+    const int size = field.size;
+    const double center = (size - 1.0) / 2.0;
+    long long total_score = 0;
+
+    // progress (0.0 -> 1.0) に応じて、評価の重点を置く「リング」の半径を決定
+    // progress=0.0 のとき、最も外側を重視
+    // progress=1.0 のとき、中心を重視
+    const double target_radius = center * (1.0 - progress);
+
+    const auto get_weight = [&](double dist_from_center) {
+        // target_radiusからの距離が小さいほど高い重みを与えるガウス関数的な重み付け
+        double diff = dist_from_center - target_radius;
+        // 分散を調整して、重みの集中度合いを変える (小さいほどシャープになる)
+        double sigma = center / 4.0; // 例: 半径の1/4を標準偏差とする
+        return static_cast<long long>(1000.0 * exp(-(diff * diff) / (2.0 * sigma * sigma)));
+    };
+
+    const auto& data = field.data;
+    // 水平ペア
+    for (int y = 0; y < size; ++y) {
+        int row_start = y * size;
+        for (int x = 0; x < size - 1; ++x) {
+            int idx = row_start + x;
+            if (data[idx] == data[idx + 1]) {
+                double dist_y = y - center;
+                double dist_x = (x + 0.5) - center;
+                total_score += get_weight(sqrt(dist_x * dist_x + dist_y * dist_y));
+            }
+        }
+    }
+    // 垂直ペア
+    for (int i = 0; i < size * (size - 1); ++i) {
+        if (data[i] == data[i + size]) {
+            int y = i / size;
+            int x = i % size;
+            double dist_y = (y + 0.5) - center;
+            double dist_x = x - center;
+            total_score += get_weight(sqrt(dist_x * dist_x + dist_y * dist_y));
         }
     }
 

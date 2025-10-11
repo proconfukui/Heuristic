@@ -25,3 +25,4 @@ vector<int> add_matrix(const vector<int>& matrix1, const vector<int>& matrix2);
 vector<int> create_around_weight_matrix(int size);
 int evaluate_edge_pairs(const Field& field, int edge_weight);
 int evaluate_outer_rim_pairs(const Field& field);
+int evaluate_by_distance_from_center(const Field& field, double progress);

@@ -68,7 +68,8 @@ struct Field {
             data.reserve(size * size);
             for (const auto& row : field2d) {
                 data.insert(data.end(), row.begin(), row.end());
-            }
+       光速か
+      }
         }
     }
 
