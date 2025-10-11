@@ -37,7 +37,7 @@ using std::vector;
 
 void initialize(int &start_time, vector<vector<int>> &field, vector<int> &weights);
 void print_answer(int time, const vector<Operation>& ops, const vector<vector<int>>& field);
-vector<Operation> beam_search(const vector<vector<int>>& field, vector<int> weights, int depth, int width, int commit_step, int num_sample, int max_time, double random_injection_rate, const function<bool(vector<vector<int>>&)>& judge, const function<int(const vector<vector<int>>&)>& evaluator);
+vector<Operation> beam_search(const vector<vector<int>>& field, vector<int> weights, int depth, int width, int commit_step, int num_sample, int max_time, double random_injection_rate, const function<bool(const vector<vector<int>>&)>& judge, const function<int(const vector<vector<int>>&)>& evaluator);
 vector<Operation> best_operations_random(const vector<vector<int>>& field, int num_sample, int width, const function<int(const vector<vector<int>>&)>& evaluator);
 vector<Operation> best_operations_random2(const vector<vector<int>>& field, int num_sample, int width, double random_injection_rate, const function<int(const vector<vector<int>>&)>& evaluator);
 vector<Operation> a_star(const vector<vector<int>>& field, const vector<int>& weights, const function<int(const vector<vector<int>>&)>& evaluator);
@@ -75,7 +75,7 @@ int main()
 
           vector<Operation> rim_ops = beam_search(
               sub_field, weights, 50, 40, 5, 200, 150, 0.1,
-              [&](vector<vector<int>>& f) {
+              [&](const vector<vector<int>>& f) {
                   return check_outer_rim_filled(f);
               },
               [&](const vector<vector<int>>& f) {
@@ -92,14 +92,14 @@ int main()
       // --- フェーズ2: 中央の16x16を解く ---
       cerr << "Solving center 16x16..." << endl;
       vector<vector<int>> center_field = cut_field(field, offset, offset, 16);
-      vector<Operation> center_ops_1 = beam_search(center_field, weights, 70, 40, 5, 200, 100, 0.1,
+      vector<Operation> center_ops_1 = beam_search(center_field, weights, 70, 40, 5, 200, 100, 0.1, // random_injection_rate を追加
           [](const vector<vector<int>> &f){ return 100 * count_pair(f) / (16*16/2) > 80; },
-          [](const vector<vector<int>>& f){ return count_pair(f) * _weights[0] - measure_distance(f); }
+          [&weights](const vector<vector<int>>& f){ return count_pair(f) * weights[0] - measure_distance(f); }
       );
       apply_ops(center_field, center_ops_1);
-      vector<Operation> center_ops_2 = beam_search(center_field, weights, 100, 60, 5, 200, 100, 0.0,
+      vector<Operation> center_ops_2 = beam_search(center_field, weights, 100, 60, 5, 200, 100, 0.0, // random_injection_rate を追加
           [](const vector<vector<int>> &f){ return check_all_pair(f); },
-          [](const vector<vector<int>> &f){ return count_pair(f) * _weights[0] - measure_distance(f); }
+          [&weights](const vector<vector<int>> &f){ return count_pair(f) * weights[0] - measure_distance(f); }
       );
 
       vector<Operation> corrected_center_ops_1 = correct_op(center_ops_1, offset, offset);
@@ -109,7 +109,7 @@ int main()
 
   } else {
       // --- 既存のアルゴリズム (フィールドサイズ < 16 の場合) ---
-      auto dynamic_evaluator = [max_pair_number](const vector<vector<int>>& f) {
+      auto dynamic_evaluator = [max_pair_number, &weights](const vector<vector<int>>& f) {
           int pairs = count_pair(f);
           double progress = (max_pair_number > 0) ? static_cast<double>(pairs) / max_pair_number : 0.0;
 
@@ -155,7 +155,7 @@ int main()
 }
 
 // ビームサーチ
-vector<Operation> beam_search(const vector<vector<int>>& field, vector<int> weights, int depth, int width, int commit_step, int num_sample, int max_time, double random_injection_rate, const function<bool(vector<vector<int>>&)>& judge, const function<int(const vector<vector<int>>&)>& evaluator)
+vector<Operation> beam_search(const vector<vector<int>>& field, vector<int> weights, int depth, int width, int commit_step, int num_sample, int max_time, double random_injection_rate, const function<bool(const vector<vector<int>>&)>& judge, const function<int(const vector<vector<int>>&)>& evaluator)
 {
   auto is_valid_op_for_field = [](const vector<vector<int>> &f, const Operation &op) -> bool
   {
@@ -216,7 +216,7 @@ vector<Operation> beam_search(const vector<vector<int>>& field, vector<int> weig
       // next_nodeに新しい生成されるnodeを作る
       for (const auto &node : nodes)
       {
-        candidates = best_operations_random2(node.field, num_sample, width, random_injection_rate, evaluator);
+        candidates = best_operations_random2(node.field, num_sample, dynamic_width, random_injection_rate, evaluator);
         for (const auto &op : candidates)
         {
           // 安全性チェック（範囲外アクセスによるヒープ破損を防ぐ）

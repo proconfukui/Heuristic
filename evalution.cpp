@@ -149,7 +149,7 @@ vector<vector<int>> create_weight_matrix(int size, function<int(int)> func)
       {
         y_dis = y - center + 1;
       }
-      int distance = pow(pow(x_dis, 2) + pow(y_dis, 2), 0.5);
+      int distance = static_cast<int>(pow(pow(static_cast<double>(x_dis), 2.0) + pow(static_cast<double>(y_dis), 2.0), 0.5));
       matrix[y][x] = func(distance);
 
       // 最大値を追跡
@@ -244,7 +244,7 @@ int evaluate_edge_pairs(const vector<vector<int>>& field, int edge_weight)
             {
                 int penalty = (min(x, field_size - 1 - x) + min(y, field_size - 1 - y) +
                                min(x + 1, field_size - 1 - (x + 1)) + min(y, field_size - 1 - y));
-                total_score += _weights[1] - edge_weight * penalty;
+                total_score += 1000 - edge_weight * penalty;
             }
         }
     }
@@ -258,7 +258,7 @@ int evaluate_edge_pairs(const vector<vector<int>>& field, int edge_weight)
             {
                 int penalty = (min(x, field_size - 1 - x) + min(y, field_size - 1 - y) +
                                min(x, field_size - 1 - x) + min(y + 1, field_size - 1 - (y + 1)));
-                total_score += _weights[1] - edge_weight * penalty;
+                total_score += 1000 - edge_weight * penalty;
             }
         }
     }
