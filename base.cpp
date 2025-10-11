@@ -232,7 +232,7 @@ void print_matrix(const vector<vector<int>> &field)
 
 // デバッグ用。matrixの状態をターミナルに表示する。
 // テスト済
-void print_matrix(const vector<vector<float>> &field)
+void print_matrix(const vector<vector<double>> &field)
 {
   cerr << "            ";
   for (int i = 0; i < field.size(); i++)

@@ -8,17 +8,10 @@
 # ./main.sh testcase/problem.json testcase/weights.txt 1 ./bin/main.exe | ./bin/create_answer_json.exe testcase/answer.json
 # cat output_*.txtで出てきた複数の標準出力の中から最も好ましい解をcreate_answer.jsonで出力する。
 
-CORE_NUM=0
-case $(uname -s) in
-  Darwin)
-    # macOS
-    CORE_NUM=$(sysctl -n hw.ncpu) / 2
-    ;;
-  *)
-    # Linux or Windows (WSL/Git Bash)
-    CORE_NUM=$(nproc) /2
-    ;;
-esac
+
+# Linux or Windows (WSL/Git Bash)
+CORE_NUM=$(nproc) /2
+
 
 # main.exeをコアごとに実行し、一時ファイルに出力
 
@@ -26,7 +19,7 @@ esac
 for i in `seq 1 $CORE_NUM`
 do
   ./bin/input_problem.exe $1 $2 $((i+$3-1)) | \
-    ./bin/main.exe  > "output_$i.txt" 2> "error/error_$i.txt" &
+    ./bin/main.exe  > "output_$i.txt"&
 done
 
 wait

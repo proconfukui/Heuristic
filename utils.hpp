@@ -50,16 +50,16 @@ struct BFSNode {
 struct BeamNode {
     vector<vector<int>> field;
     vector<Operation> ops;
-    float score;
+    int score;
     
     // デフォルトコンストラクタ
     BeamNode() : score(0.0f) {}
     
     // コンストラクタ
-    BeamNode(const vector<vector<int>>& f, const vector<Operation>& o, float s)
+    BeamNode(const vector<vector<int>>& f, const vector<Operation>& o, int s)
         : field(f), ops(o), score(s) {}
     
-    BeamNode(vector<vector<int>>&& f, vector<Operation>&& o, float s)
+    BeamNode(vector<vector<int>>&& f, vector<Operation>&& o, int s)
         : field(std::move(f)), ops(std::move(o)), score(s) {}
 
     // 明示的なムーブ/コピー（realloc時にムーブが優先されるようにnoexceptを付与）
@@ -72,9 +72,9 @@ struct BeamNode {
 struct State {
     vector<vector<int>> field;
     vector<Operation> ops;
-    float g; // 実際にかかった手数
-    float h; // 予想距離
-    float f; // g + h
+    int g; // 実際にかかった手数
+    int h; // 予想距離
+    int f; // g + h
 
     // 比較演算子（priority_queue用、fが小さい順）
     bool operator<(const State& other) const {

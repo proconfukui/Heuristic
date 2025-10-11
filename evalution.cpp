@@ -11,23 +11,23 @@ using std::function;
 using std::vector;
 
 // 各座標の重み
-vector<vector<float>> _weight_matrix1;
-vector<vector<float>> _weight_matrix2;
-vector<vector<float>> _weight_matrix3;
+vector<vector<int>> _weight_matrix1;
+vector<vector<int>> _weight_matrix2;
+vector<vector<int>> _weight_matrix3;
 
 // weights[0] : ペアの数
 // weights[1] : ペア候補間の距離
 // weights[2] : z=(xy)^2の分布に基づくペアの評価
 // weights[3] : z=f(r) (r=root(x^2+y^2)) の分布に基づくペアの評価
 
-vector<float> _weights;
+vector<int> _weights;
 
 // weights(評価関数の重みと、weight_matrixを初期化)
-void initialize_evalutor(const vector<vector<int>> &field, const vector<float> &weigths)
+void initialize_evalutor(const vector<vector<int>> &field, const vector<int> &weigths)
 {
   _weights = weigths;
   _weight_matrix1 = create_x2y2_weight_matrix(field.size());
-  _weight_matrix2 = create_weight_matrix(field.size(), [](float x)
+  _weight_matrix2 = create_weight_matrix(field.size(), [](int x)
                                          { return pow(x, 2); });
   _weight_matrix3 = create_around_weight_matrix(field.size());
 }
@@ -103,9 +103,9 @@ int measure_distance(const vector<vector<int>> &field)
 //   return total;
 // }
 
-// vector<vector<float>> product_matrix(const vector<vector<float>>& field,float term){
+// vector<vector<int>> product_matrix(const vector<vector<int>>& field,int term){
 //   int size = field.size();
-//   vector<vector<float>> matrix = field;
+//   vector<vector<int>> matrix = field;
 //   for (int y = 0; y < size; y++) {
 //     for (int x = 0; x < size; x++) {
 //       matrix[y][x] *= term;
@@ -117,11 +117,11 @@ int measure_distance(const vector<vector<int>> &field)
 // ある関数を与えることにより、その関数をZ軸を中心に回転させたときの、(X,Y)のZの大きさが格納された大きさsizeの二重配列を返す
 // 最大値が1になるように標準化される
 // テスト済
-vector<vector<float>> create_weight_matrix(int size, function<float(float)> func)
+vector<vector<int>> create_weight_matrix(int size, function<int(int)> func)
 {
   int center = size / 2;
-  vector<vector<float>> matrix = vector<vector<float>>(size, vector<float>(size, 0));
-  float max_value = 0.0f;
+  vector<vector<int>> matrix = vector<vector<int>>(size, vector<int>(size, -1));
+  int max_value = 0;
 
   // まず、すべての値を計算
   for (int y = 0; y < size; y++)
@@ -146,7 +146,7 @@ vector<vector<float>> create_weight_matrix(int size, function<float(float)> func
       {
         y_dis = y - center + 1;
       }
-      float distance = pow(pow(x_dis, 2) + pow(y_dis, 2), 0.5);
+      int distance = pow(pow(x_dis, 2) + pow(y_dis, 2), 0.5);
       matrix[y][x] = func(distance);
 
       // 最大値を追跡
@@ -157,25 +157,13 @@ vector<vector<float>> create_weight_matrix(int size, function<float(float)> func
     }
   }
 
-  // 最大値で標準化（最大値が0でない場合のみ）
-  if (max_value > 0.0f)
-  {
-    for (int y = 0; y < size; y++)
-    {
-      for (int x = 0; x < size; x++)
-      {
-        matrix[y][x] /= max_value;
-      }
-    }
-  }
-
   return matrix;
 }
 
-vector<vector<float>> add_matrix(const vector<vector<float>> &matrix1, const vector<vector<float>> &matrix2)
+vector<vector<int>> add_matrix(const vector<vector<int>> &matrix1, const vector<vector<int>> &matrix2)
 {
   int size = matrix1.size();
-  vector<vector<float>> matrix = vector<vector<float>>(size, vector<float>(size, 0));
+  vector<vector<int>> matrix = vector<vector<int>>(size, vector<int>(size, 0));
   for (int y = 0; y < size; y++)
   {
     for (int x = 0; x < size; x++)
@@ -188,20 +176,20 @@ vector<vector<float>> add_matrix(const vector<vector<float>> &matrix1, const vec
 }
 
 // z = (xy)^2の分布に基づいた重みの二重配列を返す
-vector<vector<float>> create_x2y2_weight_matrix(int size)
+vector<vector<int>> create_x2y2_weight_matrix(int size)
 {
-  vector<vector<float>> matrix = vector<vector<float>>(size, vector<float>(size, 0));
+  vector<vector<int>> matrix = vector<vector<int>>(size, vector<int>(size, 0));
 
   for (int y = 0; y < size; y++)
   {
     for (int x = 0; x < size; x++)
     {
       // (x,y)を[-1,1]の範囲にマッピング
-      float normalized_x = (2.0f * x) / (size - 1) - 1.0f;
-      float normalized_y = (2.0f * y) / (size - 1) - 1.0f;
+      int normalized_x = (2 * x) / (size - 1) - 1;
+      int normalized_y = (2 * y) / (size - 1) - 1;
 
       // z = (xy)^2 を計算
-      float z = pow(normalized_x * normalized_y, 2);
+      int z = pow(normalized_x * normalized_y, 2);
       matrix[y][x] = z;
     }
   }
@@ -209,9 +197,9 @@ vector<vector<float>> create_x2y2_weight_matrix(int size)
 }
 
 // フィールドの上と左の二マスのペアだけ評価する
-vector<vector<float>> create_around_weight_matrix(int size)
+vector<vector<int>> create_around_weight_matrix(int size)
 {
-  vector<vector<float>> matrix = vector<vector<float>>(size, vector<float>(size, 0));
+  vector<vector<int>> matrix = vector<vector<int>>(size, vector<int>(size, 0));
   for (int y = 0; y < size; y++)
   {
     for (int x = 0; x < size; x++)
@@ -231,9 +219,9 @@ vector<vector<float>> create_around_weight_matrix(int size)
 }
 
 // ペアの数を重みを付けて計算する
-float count_weighted_pair(const vector<vector<int>> &field, const vector<vector<float>> &weight_matrix)
+int count_weighted_pair(const vector<vector<int>> &field, const vector<vector<int>> &weight_matrix)
 {
-  float counter = 0;
+  int counter = 0;
   for (int y = 0; y < field.size(); y++)
   {
     for (int x = 0; x < field.size() - 1; x++)
@@ -257,30 +245,30 @@ float count_weighted_pair(const vector<vector<int>> &field, const vector<vector<
   return counter;
 }
 
-float func1(const vector<vector<int>> &field)
+int func1(const vector<vector<int>> &field)
 {
   return count_weighted_pair(field, _weight_matrix1);
 }
 
-float func2(const vector<vector<int>> &field)
+int func2(const vector<vector<int>> &field)
 {
-  float term1 = measure_distance(field) * _weights[1];
-  float term2 = count_weighted_pair(field, _weight_matrix2) * _weights[3];
+  int term1 = measure_distance(field) * _weights[1];
+  int term2 = count_weighted_pair(field, _weight_matrix2) * _weights[3];
   return -term1 + term2;
 }
 
-float func3(const vector<vector<int>> &field)
+int func3(const vector<vector<int>> &field)
 {
-  float term1 = count_pair(field) * _weights[0];
-  float term2 = measure_distance(field) * _weights[1];
+  int term1 = count_pair(field) * _weights[0];
+  int term2 = measure_distance(field) * _weights[1];
   // cerr << term1 <<" "<< term2<< endl;
   return term1 - term2;
 }
 
-float func4(const vector<vector<int>> &field)
+int func4(const vector<vector<int>> &field)
 {
-  float term1 = count_pair(field) * _weights[0];
-  float term2 = measure_distance(field) * _weights[1];
+  int term1 = count_pair(field) * _weights[0];
+  int term2 = measure_distance(field) * _weights[1];
   // cerr << term1 <<" "<< term2<<endl;
   return term1 - term2;
 }

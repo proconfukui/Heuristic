@@ -35,12 +35,12 @@ using std::unordered_map;
 using std::unordered_set;
 using std::vector;
 
-void initialize(int &start_time, vector<vector<int>> &field, vector<float> &weights);
+void initialize(int &start_time, vector<vector<int>> &field, vector<int> &weights);
 void print_answer(int time, const vector<Operation> &ops, const vector<vector<int>> &field);
-vector<Operation> beam_search(const vector<vector<int>> &field, vector<float> weights, int depth, int width, int commit_step, int num_sample, int max_time, const function<bool(vector<vector<int>> &)> &judge, const function<float(vector<vector<int>> &)> &evaluator);
-vector<Operation> best_operations_random(const vector<vector<int>> &field, int num_sample, int width, const function<float(vector<vector<int>> &)> &evaluator);
-vector<Operation> best_operations_random2(const vector<vector<int>> &field, int num_sample, int width, const function<float(vector<vector<int>> &)> &evaluator);
-vector<Operation> a_star(vector<vector<int>> field, const function<float(vector<vector<int>> &)> &evaluator);
+vector<Operation> beam_search(const vector<vector<int>> &field, vector<int> weights, int depth, int width, int commit_step, int num_sample, int max_time, const function<bool(vector<vector<int>> &)> &judge, const function<int(vector<vector<int>> &)> &evaluator);
+vector<Operation> best_operations_random(const vector<vector<int>> &field, int num_sample, int width, const function<int(vector<vector<int>> &)> &evaluator);
+vector<Operation> best_operations_random2(const vector<vector<int>> &field, int num_sample, int width, const function<int(vector<vector<int>> &)> &evaluator);
+vector<Operation> a_star(vector<vector<int>> field, const function<int(vector<vector<int>> &)> &evaluator);
 
 int main()
 {
@@ -50,7 +50,7 @@ int main()
   // 標準入力から変数へ代入
   int start_time;
   vector<vector<int>> field;
-  vector<float> weights;
+  vector<int> weights;
   initialize(start_time, field, weights);
 
   // print_analysisで正しく解析できるよう、初期盤面を保持しておく
@@ -61,7 +61,7 @@ int main()
   // print_matrix(field);
   vector<Operation> answer;
 
-  // //  端から揃える方法(ビームサーチ版)
+  //  端から揃える方法(ビームサーチ版)
   // vector<vector<int>> tmp_field = field;
   // for(int layer =0;layer<field.size()-3+6;layer+=2){
   //   vector<Operation> tmp_answer = beam_search(field, weights, 100, 50 , 3, 200,100,check_around_pair,[](const vector<vector<int>>& field){
@@ -81,53 +81,57 @@ int main()
   vector<vector<int>> tmp_field = field;
 
   int chenge_point = 0;
-  if(field.size() > 10){
-    chenge_point = 10;
+  if(field.size() > 16){
+    chenge_point = 16;
   }else{
     chenge_point = field.size();
   }
-  print_matrix(field);
-  int max_pair_number = field.size() * field.size() / 2;
-  for (int layer = 0; field.size() - layer > chenge_point; layer += 2)
-  {
-    for (int y = 0; y <= 1; y++)
-    {
-      for (int x = 1; x < tmp_field.size(); x += 2)
-      {
-        vector<Operation> tmp_answer = calculate_shortest_moves_with_obstacles(tmp_field, 1, x, y);
-        apply_ops(tmp_field, tmp_answer);
-        vector<Operation> corrected_ops = correct_op(tmp_answer, layer, layer);
-        answer.insert(answer.end(), corrected_ops.begin(), corrected_ops.end());
-      }
-    }
-    for (int x = 0; x <= 1; ++x)
-    {
-      for (int y = tmp_field.size() - 2; y >= 2; y -= 2)
-      {
-        vector<Operation> tmp_answer = calculate_shortest_moves_with_obstacles(tmp_field, 2, x, y);
-        apply_ops(tmp_field, tmp_answer);
-        // print_matrix(field);
-        vector<Operation> corrected_ops = correct_op(tmp_answer, layer, layer);
-        answer.insert(answer.end(), corrected_ops.begin(), corrected_ops.end());
-      }
-    }
-    cerr << "arrayed field : layer " << layer << endl;
-    tmp_field = cut_field(tmp_field, 2, 2, tmp_field.size() - 2);
-  }
+  // print_matrix(field);
+  // int max_pair_number = field.size() * field.size() / 2;
+  // for (int layer = 0; field.size() - layer > chenge_point; layer += 2)
+  // {
+  //   for (int y = 0; y <= 1; y++)
+  //   {
+  //     for (int x = 1; x < tmp_field.size(); x += 2)
+  //     {
+  //       vector<Operation> tmp_answer = calculate_shortest_moves_with_obstacles(tmp_field, 1, x, y);
+  //       apply_ops(tmp_field, tmp_answer);
+  //       vector<Operation> corrected_ops = correct_op(tmp_answer, layer, layer);
+  //       answer.insert(answer.end(), corrected_ops.begin(), corrected_ops.end());
+  //     }
+  //   }
+  //   for (int x = 0; x <= 1; ++x)
+  //   {
+  //     for (int y = tmp_field.size() - 2; y >= 2; y -= 2)
+  //     {
+  //       vector<Operation> tmp_answer = calculate_shortest_moves_with_obstacles(tmp_field, 2, x, y);
+  //       apply_ops(tmp_field, tmp_answer);
+  //       // print_matrix(field);
+  //       vector<Operation> corrected_ops = correct_op(tmp_answer, layer, layer);
+  //       answer.insert(answer.end(), corrected_ops.begin(), corrected_ops.end());
+  //     }
+  //   }
+  //   cerr << "arrayed field : layer " << layer << endl;
+  //   tmp_field = cut_field(tmp_field, 2, 2, tmp_field.size() - 2);
+  // }
 
-  cerr << "start beam_search" << endl;
-  print_matrix(tmp_field);
+  // cerr << "start beam_search" << endl;
+  // print_matrix(tmp_field);
 
   vector<Operation> tmp_answer = {};
   initialize_evalutor(tmp_field, weights);
   int new_max_pair_number = tmp_field.size() * tmp_field.size() / 2;
-  // if(chenge_point < 14){
-  vector<Operation> answer1 = beam_search(tmp_field, weights, 50, 50, 5, 300, 100, [new_max_pair_number](const vector<vector<int>> &field)
-                                        { return count_pair(field) / new_max_pair_number > 0.8; }, [](const vector<vector<int>> &field)
-                                        { return count_pair(field) * _weights[0] - measure_distance(field); });
+  // // if(chenge_point < 14){
+  vector<Operation> answer1 = beam_search(tmp_field, weights, 150, 50, 5, 300, 100, [new_max_pair_number](const vector<vector<int>> &field)
+                                        { int ratio = count_pair(field) / (new_max_pair_number +0.0);
+                                          cerr << ratio << endl;
+                                          return ratio > 0.60; }, [](const vector<vector<int>> &field)
+                                        { return count_pair(field); });
   apply_ops(tmp_field, answer1);
-  vector<Operation> answer2 = beam_search(tmp_field, weights, 100, 40, 3, 200, 100, [new_max_pair_number](const vector<vector<int>> &field)
-                                        { return count_pair(field) / new_max_pair_number >= 1; }, [](const vector<vector<int>> &field)
+  vector<Operation> answer2 = beam_search(tmp_field, weights, 100, 60, 3, 200, 100, [new_max_pair_number](const vector<vector<int>> &field)
+                                        { int ratio = count_pair(field) / (new_max_pair_number+0.0);
+                                          cerr << ratio << endl;
+                                          return ratio >= 1; }, [](const vector<vector<int>> &field)
                                         { return count_pair(field) * _weights[1] - measure_distance(field); });
 
   tmp_answer.insert(tmp_answer.end(), answer1.begin(), answer1.end());
@@ -137,17 +141,17 @@ int main()
   answer.insert(answer.end(), corrected_ops.begin(), corrected_ops.end());
 // // }else{
 
-  //   // 4隅にペアを揃える
-    // vector<Operation> answer1 = beam_search(tmp_field, weights, 200, 20, 4, 200, 100,[new_max_pair_number](const vector<vector<int>> &field)
+    // 4隅にペアを揃える
+    // vector<Operation> answer1 = beam_search(tmp_field, weights, 100, 20, 4, 300, 100,[new_max_pair_number](const vector<vector<int>> &field)
     //                                       { return count_pair(field) / new_max_pair_number > 0.3; },func1);
     // apply_ops(field,answer1);
 
     // // //端からペアを揃える
-    // vector<Operation> answer2 = beam_search(tmp_field, weights, 200, 30, 4, 200, 100,[new_max_pair_number](const vector<vector<int>> &field)
+    // vector<Operation> answer2 = beam_search(tmp_field, weights, 100, 30, 4, 300, 100,[new_max_pair_number](const vector<vector<int>> &field)
     //                                       { return count_pair(field) / new_max_pair_number > 0.8; },func2);
     // apply_ops(field,answer2);
 
-    // vector<Operation> answer3 = beam_search(tmp_field, weights, 200, 30, 1, 500, 100,[new_max_pair_number](const vector<vector<int>> &field)
+    // vector<Operation> answer3 = beam_search(tmp_field, weights, 200, 40, 1, 500, 100,[new_max_pair_number](const vector<vector<int>> &field)
     //                                       { return count_pair(field) / new_max_pair_number > 1.0; },func3);
 
     // tmp_answer.insert(tmp_answer.end(),answer1.begin(),answer1.end());
@@ -162,10 +166,10 @@ int main()
   // print_matrix(field);
   //---------------------------------------------------------------------------------------------------------------
 
-  // float max_pair_num = field.size()*field.size()/2 +0.0;
+  // int max_pair_num = field.size()*field.size()/2 +0.0;
   // ビームサーチによる探索
   // 処理時間は幅に比例
-  // float max_pair_number = field.size() * field.size() / 2 + 0.0;
+  // int max_pair_number = field.size() * field.size() / 2 + 0.0;
 
   // vector<Operation> answer1 = beam_search(field, weights, 30, 50, 10, 200, 100, [&max_pair_number](const vector<vector<int>> &field)
   //                                         { return count_pair(field) / max_pair_number > 0.8; }, [](const vector<vector<int>> &field)
@@ -201,7 +205,7 @@ int main()
 }
 
 // ビームサーチ
-vector<Operation> beam_search(const vector<vector<int>> &field, vector<float> weights, int depth, int width, int commit_step, int num_sample, int max_time, const function<bool(vector<vector<int>> &)> &judge, const function<float(vector<vector<int>> &)> &evaluator)
+vector<Operation> beam_search(const vector<vector<int>> &field, vector<int> weights, int depth, int width, int commit_step, int num_sample, int max_time, const function<bool(vector<vector<int>> &)> &judge, const function<int(vector<vector<int>> &)> &evaluator)
 {
   auto is_valid_op_for_field = [](const vector<vector<int>> &f, const Operation &op) -> bool
   {
@@ -263,7 +267,7 @@ vector<Operation> beam_search(const vector<vector<int>> &field, vector<float> we
           }
           vector<vector<int>> work_field = node.field; // コピーを作成
           rotate(work_field, op);
-          float score = evaluator(work_field);
+          int score = evaluator(work_field);
           vector<Operation> new_ops = node.ops;
           new_ops.push_back(op);
           next_nodes.emplace_back(std::move(work_field), std::move(new_ops), score);
@@ -300,7 +304,7 @@ vector<Operation> beam_search(const vector<vector<int>> &field, vector<float> we
       // ペアの割合がterm_ratioを超えた段階でビームサーチを終える
       if (judge(tmp_field))
       {
-        cerr << static_cast<float>(count_pair(tmp_field)) / max_pair_number << endl;
+        cerr << static_cast<int>(count_pair(tmp_field)) / max_pair_number << endl;
         cerr << "end this search" << endl;
         return answer;
       }
@@ -311,9 +315,10 @@ vector<Operation> beam_search(const vector<vector<int>> &field, vector<float> we
     // commit_step回のステップにどれほど時間がかかるかを計測
     auto end_time = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - begin_time);
-    // cerr << "exe_time: " << duration.count() << " ms" << endl;
+    cerr << "exe_time: " << duration.count() << " ms" << endl;
     // timelocal.push_back(duration.count());
   }
+  cerr << "end this search" << endl;
   return answer;
 }
 
@@ -345,7 +350,7 @@ vector<Operation> select_all_operation(const vector<vector<int>> &field)
 }
 
 // 2.2 ランダムにの手の評価値を計算し、上位width手を返す
-vector<Operation> best_operations_random(const vector<vector<int>> &field, int num_sample, int width, const function<float(vector<vector<int>> &)> &evaluator)
+vector<Operation> best_operations_random(const vector<vector<int>> &field, int num_sample, int width, const function<int(vector<vector<int>> &)> &evaluator)
 {
   int field_size = field.size();
   // 取りうる全ての手とサンプル数を比べ少ないほうを選ぶ
@@ -353,7 +358,7 @@ vector<Operation> best_operations_random(const vector<vector<int>> &field, int n
 
   vector<vector<int>> tmp_field = field;
 
-  set<pair<float, Operation>> candidates;
+  set<pair<int, Operation>> candidates;
   while (candidates.size() < num_sample)
   {
     int n = rand_int(2, field_size);
@@ -377,7 +382,7 @@ vector<Operation> best_operations_random(const vector<vector<int>> &field, int n
 }
 
 // 2.2 別アルゴリズム版: 全手を列挙→シャッフル→上からnum_sample個を評価し、上位width手を返す
-vector<Operation> best_operations_random2(const vector<vector<int>> &field, int num_sample, int width, const function<float(vector<vector<int>> &)> &evaluator)
+vector<Operation> best_operations_random2(const vector<vector<int>> &field, int num_sample, int width, const function<int(vector<vector<int>> &)> &evaluator)
 {
   int field_size = field.size();
   // 全手を列挙
@@ -400,14 +405,14 @@ vector<Operation> best_operations_random2(const vector<vector<int>> &field, int 
   std::shuffle(all_ops.begin(), all_ops.end(), gen);
 
   // 先頭からnum_sample件だけ評価
-  vector<pair<float, Operation>> scored;
+  vector<pair<int, Operation>> scored;
   scored.reserve(num_sample);
   vector<vector<int>> tmp_field = field;
   for (int i = 0; i < num_sample; ++i)
   {
     const Operation &op = all_ops[i];
     rotate(tmp_field, op);
-    float sc = evaluator(tmp_field);
+    int sc = evaluator(tmp_field);
     unrotate(tmp_field, op);
     scored.emplace_back(sc, op);
   }
@@ -421,7 +426,7 @@ vector<Operation> best_operations_random2(const vector<vector<int>> &field, int 
   {
     // 部分ソートで上位のみ確定（降順）
     std::partial_sort(scored.begin(), scored.begin() + width, scored.end(),
-                      [](const pair<float, Operation> &a, const pair<float, Operation> &b)
+                      [](const pair<int, Operation> &a, const pair<int, Operation> &b)
                       {
                         return a.first > b.first;
                       });
@@ -436,12 +441,12 @@ vector<Operation> best_operations_random2(const vector<vector<int>> &field, int 
   return result;
 }
 
-vector<Operation> a_star(vector<vector<int>> field, const function<float(vector<vector<int>> &)> &evaluator)
+vector<Operation> a_star(vector<vector<int>> field, const function<int(vector<vector<int>> &)> &evaluator)
 {
   priority_queue<State> pq;
   unordered_set<size_t> visited; // 状態のハッシュ値で管理
 
-  float h0 = evaluator(field);
+  int h0 = evaluator(field);
   pq.push(State{field, {}, 0, h0, h0});
 
   int max_pair_number = field.size() * field.size() / 2;
@@ -483,8 +488,8 @@ vector<Operation> a_star(vector<vector<int>> field, const function<float(vector<
       vector<vector<int>> next_field = cur.field;
       rotate(next_field, op);
 
-      float g = cur.g + 1; // 1手進めた
-      float h = evaluator(next_field);
+      int g = cur.g + 1; // 1手進めた
+      int h = evaluator(next_field);
       vector<Operation> next_ops = cur.ops;
       next_ops.push_back(op);
 
@@ -508,7 +513,7 @@ vector<Operation> a_star(vector<vector<int>> field, const function<float(vector<
 
 // 入力用関数
 // テスト済
-void initialize(int &start_time, vector<vector<int>> &field, vector<float> &weights)
+void initialize(int &start_time, vector<vector<int>> &field, vector<int> &weights)
 {
   cin >> start_time;
   int field_size;
@@ -524,7 +529,7 @@ void initialize(int &start_time, vector<vector<int>> &field, vector<float> &weig
   }
   int weight_size;
   cin >> weight_size;
-  float value;
+  int value;
   for (int i = 0; i < weight_size; i++)
   {
     cin >> value;
