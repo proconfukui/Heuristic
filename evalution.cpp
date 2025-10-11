@@ -25,11 +25,12 @@ vector<int> _weights;
 // weights(評価関数の重みと、weight_matrixを初期化)
 void initialize_evalutor(const vector<vector<int>> &field, const vector<int> &weigths)
 {
+  int field_size = field.size();
   _weights = weigths;
-  _weight_matrix1 = create_x2y2_weight_matrix(field.size());
-  _weight_matrix2 = create_weight_matrix(field.size(), [](int x)
+  _weight_matrix1 = create_x2y2_weight_matrix(field_size);
+  _weight_matrix2 = create_weight_matrix(field_size, [](int x)
                                          { return pow(x, 2); });
-  _weight_matrix3 = create_around_weight_matrix(field.size());
+  _weight_matrix3 = create_around_weight_matrix(field_size);
 }
 
 // ペア候補間の距離を測定する
@@ -38,7 +39,8 @@ int measure_distance(const vector<vector<int>> &field)
 {
   // ラベル値（number）がサブフィールドでは連続かつ小さいとは限らないため、
   // 動的なマップで最初の出現座標を保持し、2回目で距離を加算する。
-  const int n = static_cast<int>(field.size());
+  int field_size = field.size();
+  const int n = static_cast<int>(field_size);
   if (n <= 0)
     return 0;
 
@@ -71,7 +73,7 @@ int measure_distance(const vector<vector<int>> &field)
 // // ペア候補間の距離を測定する（高速版: 1パス・動的配列の再利用）
 // int measure_distance(const vector<vector<int>> &field)
 // {
-//   const int n = static_cast<int>(field.size());
+//   const int n = static_cast<int>(field_size);
 //   const int max_pair_number = (n * n) / 2;
 
 //   // 初回座標だけ保持（静的ベクタで容量を使い回し）
@@ -104,7 +106,7 @@ int measure_distance(const vector<vector<int>> &field)
 // }
 
 // vector<vector<int>> product_matrix(const vector<vector<int>>& field,int term){
-//   int size = field.size();
+//   int size = field_size;
 //   vector<vector<int>> matrix = field;
 //   for (int y = 0; y < size; y++) {
 //     for (int x = 0; x < size; x++) {
@@ -221,10 +223,11 @@ vector<vector<int>> create_around_weight_matrix(int size)
 // ペアの数を重みを付けて計算する
 int count_weighted_pair(const vector<vector<int>> &field, const vector<vector<int>> &weight_matrix)
 {
+  int field_size = field.size();
   int counter = 0;
-  for (int y = 0; y < field.size(); y++)
+  for (int y = 0; y < field_size; y++)
   {
-    for (int x = 0; x < field.size() - 1; x++)
+    for (int x = 0; x < field_size - 1; x++)
     {
       if (field[y][x] == field[y][x + 1])
       {
@@ -232,9 +235,9 @@ int count_weighted_pair(const vector<vector<int>> &field, const vector<vector<in
       }
     }
   }
-  for (int y = 0; y < field.size() - 1; y++)
+  for (int y = 0; y < field_size - 1; y++)
   {
-    for (int x = 0; x < field.size(); x++)
+    for (int x = 0; x < field_size; x++)
     {
       if (field[y][x] == field[y + 1][x])
       {

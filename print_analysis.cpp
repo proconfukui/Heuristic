@@ -51,7 +51,8 @@ int main(int argc, char* argv[])
 
 void analys_answer(const vector<Operation>& ops,const vector<vector<int>>& field,vector<int>& values,vector<int>& pair_ratios,const function<int(vector<vector<int>>&)> &evaluator){
   vector<vector<int>> tmp_field = field;
-  int max_pair_number = field.size() * field.size() / 2;
+  int field_size = tmp_field.size();
+  int max_pair_number = field_size * field_size / 2;
   for (const auto &op : ops)
   {
     rotate(tmp_field, op);

@@ -49,8 +49,9 @@ Point get_rotated_pos(int x, int y, int en_x, int en_y, int en_size) {
 // ペアの片割れを探す
 Point find_pair(const vector<vector<int>>& field,Point p){
     int number = field[p.y][p.x];
-    for(int y = 0;y < field.size();y++){
-        for(int x = 0;x< field.size();x++){
+    int field_size = field.size();
+    for(int y = 0;y < field_size;y++){
+        for(int x = 0;x< field_size;x++){
             if(x == p.x && y== p.y) continue;
             if(field[y][x] == number){
                 return {x,y};
@@ -69,18 +70,23 @@ vector<Operation> calculate_shortest_moves_with_obstacles(
 ) {
     int field_size = field.size();
 
-    Point move_p;
+    Point move_p;    // 動かすピース
+    Point target_p;  // ターゲット座標
 
     std::deque<BFSNode> queue;
     std::set<Point> fixed_cells;
-    queue.push_back({start_x, start_y, 0,{}});
+
     if (phase == 1) {
         fixed_cells = generate_fixed_cells_phase1(start_x, start_y, field_size);
         move_p = find_pair(field,{start_x-1,start_y});
+        target_p = {start_x, start_y};
+        queue.push_back({move_p.x, move_p.y, 0, {}});
         queue.push_back({start_x-1,start_y+1,1,{{start_x-1,start_y,2}}});
     } else if (phase == 2) {
         fixed_cells = generate_fixed_cells_phase2(start_x, start_y, field_size);
         move_p = find_pair(field,{start_x,start_y+1});
+        target_p = {start_x, start_y};
+        queue.push_back({move_p.x, move_p.y, 0, {}});
         queue.push_back({start_x+1,start_y+1,1,{{start_x,start_y,2}}});
     } else {
         std::cerr << "Error: Unknown Phase " << phase << ". Please set PHASE to 1 or 2." << std::endl;
@@ -103,7 +109,7 @@ vector<Operation> calculate_shortest_moves_with_obstacles(
         BFSNode current = queue.front();
         queue.pop_front();
         // ターゲットに到達した場合
-        if (current.x == move_p.x && current.y == move_p.y) {
+        if (current.x == target_p.x && current.y == target_p.y) {
             std::reverse(current.path.begin(),current.path.end());
             return current.path;
         }
