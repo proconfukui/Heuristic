@@ -81,12 +81,12 @@ int main()
   vector<vector<int>> tmp_field = field;
 
   int chenge_point = 0;
-  if(field.size() >=12){
+  if(field.size() > 10){
     chenge_point = 10;
   }else{
     chenge_point = field.size();
   }
-
+  print_matrix(field);
   int max_pair_number = field.size() * field.size() / 2;
   for (int layer = 0; field.size() - layer > chenge_point; layer += 2)
   {
