@@ -12,11 +12,11 @@ CORE_NUM=0
 case $(uname -s) in
   Darwin)
     # macOS
-    CORE_NUM=$(sysctl -n hw.ncpu)
+    CORE_NUM=$(sysctl -n hw.ncpu) / 2
     ;;
   *)
     # Linux or Windows (WSL/Git Bash)
-    CORE_NUM=$(nproc)
+    CORE_NUM=$(nproc) /2
     ;;
 esac
 

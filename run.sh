@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # run_and_plot.sh - mainの実行からグラフ描画まで一貫実行
-cd /home/kyonsy/projects/Heuristic
+cd ~/projects/Heuristic
 
 set -e  # エラーで停止
 

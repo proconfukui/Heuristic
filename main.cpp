@@ -81,8 +81,8 @@ int main()
   vector<vector<int>> tmp_field = field;
 
   int chenge_point = 0;
-  if(field.size() >14){
-    chenge_point = 12;
+  if(field.size() >=12){
+    chenge_point = 10;
   }else{
     chenge_point = field.size();
   }
@@ -115,41 +115,44 @@ int main()
     tmp_field = cut_field(tmp_field, 2, 2, tmp_field.size() - 2);
   }
 
-  // cerr << "start beam_search" << endl;
-  // print_matrix(tmp_field);
+  cerr << "start beam_search" << endl;
+  print_matrix(tmp_field);
 
   vector<Operation> tmp_answer = {};
   initialize_evalutor(tmp_field, weights);
   int new_max_pair_number = tmp_field.size() * tmp_field.size() / 2;
-  // if(chenge_point < 10){
-    vector<Operation> answer1 = beam_search(tmp_field, weights, 50, 50, 5, 300, 100, [new_max_pair_number](const vector<vector<int>> &field)
-                                          { return count_pair(field) / new_max_pair_number > 0.8; }, [](const vector<vector<int>> &field)
-                                          { return count_pair(field) * _weights[0] - measure_distance(field); });
-    apply_ops(tmp_field, answer1);
-    vector<Operation> answer2 = beam_search(tmp_field, weights, 100, 40, 3, 200, 100, [new_max_pair_number](const vector<vector<int>> &field)
-                                          { return count_pair(field) / new_max_pair_number >= 1; }, [](const vector<vector<int>> &field)
-                                          { return count_pair(field) * _weights[1] - measure_distance(field); });
+  // if(chenge_point < 14){
+  vector<Operation> answer1 = beam_search(tmp_field, weights, 50, 50, 5, 300, 100, [new_max_pair_number](const vector<vector<int>> &field)
+                                        { return count_pair(field) / new_max_pair_number > 0.8; }, [](const vector<vector<int>> &field)
+                                        { return count_pair(field) * _weights[0] - measure_distance(field); });
+  apply_ops(tmp_field, answer1);
+  vector<Operation> answer2 = beam_search(tmp_field, weights, 100, 40, 3, 200, 100, [new_max_pair_number](const vector<vector<int>> &field)
+                                        { return count_pair(field) / new_max_pair_number >= 1; }, [](const vector<vector<int>> &field)
+                                        { return count_pair(field) * _weights[1] - measure_distance(field); });
 
-    tmp_answer.insert(tmp_answer.end(), answer1.begin(), answer1.end());
-    tmp_answer.insert(tmp_answer.end(), answer2.begin(), answer2.end());
+  tmp_answer.insert(tmp_answer.end(), answer1.begin(), answer1.end());
+  tmp_answer.insert(tmp_answer.end(), answer2.begin(), answer2.end());
 
-    vector<Operation> corrected_ops = correct_op(tmp_answer, field.size() - chenge_point, field.size() - chenge_point);
-    answer.insert(answer.end(), corrected_ops.begin(), corrected_ops.end());
-  // }else{
+  vector<Operation> corrected_ops = correct_op(tmp_answer, field.size() - chenge_point, field.size() - chenge_point);
+  answer.insert(answer.end(), corrected_ops.begin(), corrected_ops.end());
+// // }else{
 
-  //   4隅にペアを揃える
-  //   vector<Operation> answer1 = beam_search(field, weights, 200, 20, 4, 200, 0.20, 100,func1);
-  //   apply_ops(field,answer1);
+  //   // 4隅にペアを揃える
+    // vector<Operation> answer1 = beam_search(tmp_field, weights, 200, 20, 4, 200, 100,[new_max_pair_number](const vector<vector<int>> &field)
+    //                                       { return count_pair(field) / new_max_pair_number > 0.3; },func1);
+    // apply_ops(field,answer1);
 
-  //   // //端からペアを揃える
-  //   vector<Operation> answer2 = beam_search(field, weights, 200, 30, 4, 200, 0.8,100,func2);
-  //   apply_ops(field,answer2);
+    // // //端からペアを揃える
+    // vector<Operation> answer2 = beam_search(tmp_field, weights, 200, 30, 4, 200, 100,[new_max_pair_number](const vector<vector<int>> &field)
+    //                                       { return count_pair(field) / new_max_pair_number > 0.8; },func2);
+    // apply_ops(field,answer2);
 
-  //   vector<Operation> answer4 = beam_search(field, weights, 200, 30, 1, 500, 1.0,100,func3);
+    // vector<Operation> answer3 = beam_search(tmp_field, weights, 200, 30, 1, 500, 100,[new_max_pair_number](const vector<vector<int>> &field)
+    //                                       { return count_pair(field) / new_max_pair_number > 1.0; },func3);
 
-  //   answer1.insert(answer1.end(),answer2.begin(),answer2.end());
-  //   // answer1.insert(answer1.end(),answer3.begin(),answer3.end());
-  //   answer1.insert(answer1.end(),answer4.begin(),answer4.end());
+    // tmp_answer.insert(tmp_answer.end(),answer1.begin(),answer1.end());
+    // tmp_answer.insert(tmp_answer.end(),answer2.begin(),answer2.end());
+    // tmp_answer.insert(tmp_answer.end(),answer3.begin(),answer3.end());
   // }
   
 
