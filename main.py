@@ -208,11 +208,11 @@ def main():
 
     # 試行する重みの行番号の範囲 (例: 1から16まで)
     # TODO: weights.txt の行数に合わせて調整してください
-    weight_lines = range(1, 17)
+    weight_lines = range(1, 49)
 
     pool = multiprocessing.Pool(processes=num_workers)
     for line in weight_lines:
-        pool.apply_async(run_solver, args=(line,), callback=update_best_solution)
+        pool.apply_async(run_solver, args=line, callback=update_best_solution)
     
     pool.close() # 新しいタスクの受付を終了
 
