@@ -56,20 +56,39 @@ struct BFSNode {
     std::vector<Operation> path;  // 経路を記録
 };
 
+struct Field {
+    vector<int> data;
+    int size = 0;
+
+    Field() = default;
+    Field(int s) : data(s * s), size(s) {}
+    Field(const vector<vector<int>>& field2d) {
+        if (!field2d.empty()) {
+            size = field2d.size();
+            data.reserve(size * size);
+            for (const auto& row : field2d) {
+                data.insert(data.end(), row.begin(), row.end());
+            }
+        }
+    }
+
+    int& at(int y, int x) { return data[y * size + x]; }
+    const int& at(int y, int x) const { return data[y * size + x]; }
+};
 
 struct BeamNode {
-    vector<vector<int>> field;
+    Field field;
     vector<Operation> ops;
     int score;
     
     // デフォルトコンストラクタ
-    BeamNode() : score(0.0f) {}
+    BeamNode() : score(0) {}
     
     // コンストラクタ
-    BeamNode(const vector<vector<int>>& f, const vector<Operation>& o, int s)
+    BeamNode(const Field& f, const vector<Operation>& o, int s)
         : field(f), ops(o), score(s) {}
     
-    BeamNode(vector<vector<int>>&& f, vector<Operation>&& o, int s)
+    BeamNode(Field&& f, vector<Operation>&& o, int s)
         : field(std::move(f)), ops(std::move(o)), score(s) {}
 
     // 明示的なムーブ/コピー（realloc時にムーブが優先されるようにnoexceptを付与）
@@ -80,7 +99,7 @@ struct BeamNode {
 };
 
 struct State {
-    vector<vector<int>> field;
+    Field field;
     vector<Operation> ops;
     int g; // 実際にかかった手数
     int h; // 予想距離

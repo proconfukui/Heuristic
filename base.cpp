@@ -16,11 +16,10 @@ using std::vector;
 
 // 直接引数の2重配列を上書きする
 // テスト済 - in-place回転で最適化
-void rotate(vector<vector<int>> &field, Operation op)
+void rotate(Field& field, Operation op)
 {
-  int field_size = field.size();
   // 安全性チェック: 範囲外アクセス防止
-  int N = field_size;
+  int N = field.size;
   if (N <= 0) return;
   if (op.n < 2) return;
   if (op.x < 0 || op.y < 0) return;
@@ -39,30 +38,29 @@ void rotate(vector<vector<int>> &field, Operation op)
       int offset = i - first;
 
       // 4つの要素を一時保存して回転
-      int top = field[op.y + first][op.x + i];
+      int top = field.at(op.y + first, op.x + i);
 
       // left -> top
-      field[op.y + first][op.x + i] = field[op.y + last - offset][op.x + first];
+      field.at(op.y + first, op.x + i) = field.at(op.y + last - offset, op.x + first);
 
       // bottom -> left
-      field[op.y + last - offset][op.x + first] = field[op.y + last][op.x + last - offset];
+      field.at(op.y + last - offset, op.x + first) = field.at(op.y + last, op.x + last - offset);
 
       // right -> bottom
-      field[op.y + last][op.x + last - offset] = field[op.y + i][op.x + last];
+      field.at(op.y + last, op.x + last - offset) = field.at(op.y + i, op.x + last);
 
       // top -> right
-      field[op.y + i][op.x + last] = top;
+      field.at(op.y + i, op.x + last) = top;
     }
   }
 }
 
 // 直接引数の2重配列を上書きする
 // テスト済 - in-place反時計回りで最適化（rotateの逆操作を一回で実行）
-void unrotate(vector<vector<int>> &field, Operation op)
+void unrotate(Field& field, Operation op)
 {
-  int field_size = field.size();
   // 安全性チェック: 範囲外アクセス防止
-  int N = field_size;
+  int N = field.size;
   if (N <= 0) return;
   if (op.n < 2) return;
   if (op.x < 0 || op.y < 0) return;
@@ -81,40 +79,40 @@ void unrotate(vector<vector<int>> &field, Operation op)
       int offset = i - first;
 
       // 4つの要素を一時保存して反時計回りに回転
-      int top = field[op.y + first][op.x + i];
+      int top = field.at(op.y + first, op.x + i);
 
       // right -> top
-      field[op.y + first][op.x + i] = field[op.y + i][op.x + last];
+      field.at(op.y + first, op.x + i) = field.at(op.y + i, op.x + last);
 
       // bottom -> right
-      field[op.y + i][op.x + last] = field[op.y + last][op.x + last - offset];
+      field.at(op.y + i, op.x + last) = field.at(op.y + last, op.x + last - offset);
 
       // left -> bottom
-      field[op.y + last][op.x + last - offset] = field[op.y + last - offset][op.x + first];
+      field.at(op.y + last, op.x + last - offset) = field.at(op.y + last - offset, op.x + first);
 
       // top -> left
-      field[op.y + last - offset][op.x + first] = top;
+      field.at(op.y + last - offset, op.x + first) = top;
     }
   }
 }
 
-bool check_around_pair(const vector<vector<int>> &field)
+bool check_around_pair(const Field& field)
 {
   int counter = 0;
-  int field_size = field.size();
+  int field_size = field.size;
 
   int base_x,base_y;
   base_y=0;
   // 上1行目
   for (int x = 0; x <= field_size - 1; x++)
   {
-    if (x == field_size - 1 && field[base_y][x] == field[base_y + 1][x])
+    if (x == field_size - 1 && field.at(base_y, x) == field.at(base_y + 1, x))
     {
       counter++;
       break;
     }
 
-    if (field[base_y][x] == field[base_y][x + 1] || field[base_y][x] == field[base_y + 1][x])
+    if (field.at(base_y, x) == field.at(base_y, x + 1) || field.at(base_y, x) == field.at(base_y + 1, x))
     {
       counter++;
     }
@@ -123,7 +121,7 @@ bool check_around_pair(const vector<vector<int>> &field)
   // 上2行目
   for (int x = 0; x <= field_size - 1; x++)
   {
-    if (field[base_y][x] == field[base_y][x + 1])
+    if (field.at(base_y, x) == field.at(base_y, x + 1))
     {
       counter++;
     }
@@ -133,13 +131,13 @@ bool check_around_pair(const vector<vector<int>> &field)
   // 左1列目
   for (int y = 2; y < field_size - 1; y++)
   {
-    if (y == field_size - 1 && field[y][base_x] == field[y][base_x+1])
+    if (y == field_size - 1 && field.at(y, base_x) == field.at(y, base_x + 1))
     {
       counter++;
       break;
     }
 
-    if (field[y][base_x] == field[y][base_x+1] || field[y][base_x] == field[y + 1][base_x])
+    if (field.at(y, base_x) == field.at(y, base_x + 1) || field.at(y, base_x) == field.at(y + 1, base_x))
     {
       counter++;
     }
@@ -148,7 +146,7 @@ bool check_around_pair(const vector<vector<int>> &field)
   base_x = 1;
   for (int y = 2; y < field_size - 1; y++)
   {
-    if (field[y][base_x] == field[y + 1][base_x])
+    if (field.at(y, base_x) == field.at(y + 1, base_x))
     {
       counter++;
     }
@@ -157,8 +155,8 @@ bool check_around_pair(const vector<vector<int>> &field)
 }
 
 // 外周2マスがすべてペアで埋まっているかチェックする
-bool check_outer_rim_filled(const vector<vector<int>>& field) {
-    const int field_size = field.size();
+bool check_outer_rim_filled(const Field& field) {
+    const int field_size = field.size;
     if (field_size < 4) return true;
 
     // 外周2マスにある各セル(y, x)が、右(y, x+1)または下(y+1, x)とペアになっているかチェック
@@ -171,11 +169,11 @@ bool check_outer_rim_filled(const vector<vector<int>>& field) {
 
             bool is_paired = false;
             // 右隣をチェック (xが右端でない場合)
-            if (x < field_size - 1 && field[y][x] == field[y][x + 1]) {
+            if (x < field_size - 1 && field.at(y, x) == field.at(y, x + 1)) {
                 is_paired = true;
             }
             // 下隣をチェック (yが下端でない場合)
-            if (!is_paired && y < field_size - 1 && field[y][x] == field[y + 1][x]) {
+            if (!is_paired && y < field_size - 1 && field.at(y, x) == field.at(y + 1, x)) {
                 is_paired = true;
             }
 
@@ -188,58 +186,29 @@ bool check_outer_rim_filled(const vector<vector<int>>& field) {
     return true;
 }
 
-bool check_all_pair(const vector<vector<int>> &field)
+bool check_all_pair(const Field& field)
 {
-  int field_size = field.size();
+  int field_size = field.size;
   return field_size * field_size / 2 == count_pair(field);
 }
 
-// // ペアの数を数える
-// // テスト済
-// int count_pair(const vector<vector<int>>& field){
-//     int counter = 0;
-//     for (int y = 0; y < field_size; y++) {
-//         for (int x = 0; x < field_size -1 ; x++) {
-//             if(field[y][x] == field[y][x+1]){
-//                 counter++;
-//             }
-//         }
-//     }
-//     for (int y = 0; y < field_size-1; y++) {
-//         for (int x = 0; x < field_size; x++) {
-//             if(field[y][x] == field[y+1][x]){
-//                 counter++;
-//             }
-//         }
-//     }
-//     return counter;
-// }
-
-int count_pair(const vector<vector<int>> &field)
+int count_pair(const Field& field)
 {
-  int field_size = field.size();
-  const int n = static_cast<int>(field_size);
+  const int n = field.size;
   if (n <= 0)
     return 0;
 
   int counter = 0;
-  for (int y = 0; y < n; ++y)
-  {
-    const int *row = field[y].data();
-    const int *next = (y + 1 < n) ? field[y + 1].data() : nullptr;
-
-    // 水平: 行内の隣接要素を比較（0..n-2）
-    for (int x = 0; x + 1 < n; ++x)
-    {
-      counter += (row[x] == row[x + 1]);
+  // 水平方向のペア
+  for (int y = 0; y < n; ++y) {
+    for (int x = 0; x < n - 1; ++x) {
+      if (field.at(y, x) == field.at(y, x + 1)) counter++;
     }
-    // 垂直: 下の行と同じ列を比較（0..n-1）
-    if (next)
-    {
-      for (int x = 0; x < n; ++x)
-      {
-        counter += (row[x] == next[x]);
-      }
+  }
+  // 垂直方向のペア
+  for (int y = 0; y < n - 1; ++y) {
+    for (int x = 0; x < n; ++x) {
+      if (field.at(y, x) == field.at(y + 1, x)) counter++;
     }
   }
   return counter;
@@ -247,9 +216,9 @@ int count_pair(const vector<vector<int>> &field)
 
 // デバッグ用。matrixの状態をターミナルに表示する
 // テスト済
-void print_matrix(const vector<vector<int>> &field)
+void print_matrix(const Field& field)
 {
-  int field_size = field.size();
+  int field_size = field.size;
   cerr << "   ";
   for (int i = 0; i < field_size; i++)
   {
@@ -261,7 +230,7 @@ void print_matrix(const vector<vector<int>> &field)
     cerr << setw(2) << y << "|";
     for (int x = 0; x < field_size; x++)
     {
-      cerr << setw(3) << field[y][x] << " ";
+      cerr << setw(3) << field.at(y, x) << " ";
     }
     cerr << endl;
   }
@@ -292,7 +261,7 @@ void print_matrix(const vector<vector<double>> &field)
   cerr << endl;
 }
 
-void apply_ops(vector<vector<int>> &field, const vector<Operation> ops)
+void apply_ops(Field& field, const vector<Operation> ops)
 {
   for (const auto &op : ops)
   {
@@ -300,14 +269,14 @@ void apply_ops(vector<vector<int>> &field, const vector<Operation> ops)
   }
 }
 
-vector<vector<int>> cut_field(vector<vector<int>> field, int x, int y, int n)
+Field cut_field(const Field& field, int x, int y, int n)
 {
-  vector<vector<int>> new_field(n, vector<int>(n, -1));
+  Field new_field(n);
   for (int i = 0; i < n; i++)
   {
     for (int j = 0; j < n; j++)
     {
-      new_field[i][j] = field[y + i][x + j];
+      new_field.at(i, j) = field.at(y + i, x + j);
     }
   }
   return new_field;
@@ -326,16 +295,13 @@ vector<Operation> correct_op(const vector<Operation> &ops, int x, int y)
 }
 
 // 二次元配列のハッシュ値を計算するための関数（参照渡しでコピー回避）
-unsigned long hash_field(const vector<vector<int>> &field)
+unsigned long hash_field(const Field& field)
 {
   int HASH_BASE = 41;
   unsigned long current_hash = 0;
-  for (const auto &row : field)
+  for (int cell_value : field.data)
   {
-    for (int cell_value : row)
-    {
-      current_hash = current_hash * HASH_BASE + cell_value;
-    }
+    current_hash = current_hash * HASH_BASE + cell_value;
   }
   return current_hash;
 }

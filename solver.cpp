@@ -47,13 +47,13 @@ Point get_rotated_pos(int x, int y, int en_x, int en_y, int en_size) {
 }
 
 // ペアの片割れを探す
-Point find_pair(const vector<vector<int>>& field,Point p){
-    int number = field[p.y][p.x];
-    int field_size = field.size();
+Point find_pair(const Field& field,Point p){
+    int number = field.at(p.y, p.x);
+    int field_size = field.size;
     for(int y = 0;y < field_size;y++){
         for(int x = 0;x< field_size;x++){
             if(x == p.x && y== p.y) continue;
-            if(field[y][x] == number){
+            if(field.at(y, x) == number){
                 return {x,y};
             }
         }
@@ -63,12 +63,12 @@ Point find_pair(const vector<vector<int>>& field,Point p){
 
 
 vector<Operation> calculate_shortest_moves_with_obstacles(
-    const vector<vector<int>>& field, 
+    const Field& field, 
     int phase,
     int start_x, 
     int start_y
 ) {
-    int field_size = field.size();
+    int field_size = field.size;
 
     Point move_p;    // 動かすピース
     Point target_p;  // ターゲット座標

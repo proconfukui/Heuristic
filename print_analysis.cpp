@@ -19,7 +19,7 @@ using std::istringstream;
 
 void initialize(int& time, vector<Operation> &ops, vector<vector<int>> &field);
 void print_analysis(const vector<int> values,const vector<int> pair_ratios);
-void analys_answer(const vector<Operation>& ops,const vector<vector<int>>& field,vector<int>& values,vector<int>& pair_ratios,const function<int(vector<vector<int>>&)> &evaluator);
+void analys_answer(const vector<Operation>& ops,const Field& field,vector<int>& values,vector<int>& pair_ratios,const function<int(const Field&)> &evaluator);
 vector<int> read_weights_file(char* file,int target_line);
 
 
@@ -33,15 +33,16 @@ int main(int argc, char* argv[])
   }
   int time;
   vector<Operation> ops;
-  vector<vector<int>> field;
-  initialize(time, ops, field);
+  vector<vector<int>> field_2d;
+  initialize(time, ops, field_2d);
+  Field field(field_2d);
   vector<int> weights = read_weights_file(argv[1],atoi(argv[2]));
   initialize_evalutor(field,weights);
   vector<int> values;
   vector<int> pair_ratios;
 
   // main.cppと合わせる
-  analys_answer(ops, field, values, pair_ratios, [&weights](const vector<vector<int>>& field){
+  analys_answer(ops, field, values, pair_ratios, [&weights](const Field& field){
     return count_pair(field)*_weights[0] - measure_distance(field);
   });
 
@@ -49,9 +50,9 @@ int main(int argc, char* argv[])
   return 0;
 }
 
-void analys_answer(const vector<Operation>& ops,const vector<vector<int>>& field,vector<int>& values,vector<int>& pair_ratios,const function<int(vector<vector<int>>&)> &evaluator){
-  vector<vector<int>> tmp_field = field;
-  int field_size = tmp_field.size();
+void analys_answer(const vector<Operation>& ops,const Field& field,vector<int>& values,vector<int>& pair_ratios,const function<int(const Field&)> &evaluator){
+  Field tmp_field = field;
+  int field_size = tmp_field.size;
   int max_pair_number = field_size * field_size / 2;
   for (const auto &op : ops)
   {
