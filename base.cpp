@@ -158,37 +158,31 @@ bool check_around_pair(const vector<vector<int>> &field)
 
 // 外周2マスがすべてペアで埋まっているかチェックする
 bool check_outer_rim_filled(const vector<vector<int>>& field) {
-    const int size = field.size();
-    if (size < 4) return true; // 4未満ならチェック不要
+    const int field_size = field.size();
+    if (field_size < 4) return true;
 
-    // 上2行
-    for (int y = 0; y < 2; ++y) {
-        for (int x = 0; x < size; ++x) {
-            if (field[y][x] != (x < size - 1 ? field[y][x+1] : -1) &&
-                field[y][x] != (y < 1 ? field[y+1][x] : -1)) {
+    // 外周2マスにある各セル(y, x)が、右(y, x+1)または下(y+1, x)とペアになっているかチェック
+    for (int y = 0; y < field_size; ++y) {
+        for (int x = 0; x < field_size; ++x) {
+            // チェック対象は外周2マスのみ
+            if (y > 1 && y < field_size - 2 && x > 1 && x < field_size - 2) {
+                continue;
+            }
+
+            bool is_paired = false;
+            // 右隣をチェック (xが右端でない場合)
+            if (x < field_size - 1 && field[y][x] == field[y][x + 1]) {
+                is_paired = true;
+            }
+            // 下隣をチェック (yが下端でない場合)
+            if (!is_paired && y < field_size - 1 && field[y][x] == field[y + 1][x]) {
+                is_paired = true;
+            }
+
+            // どちらともペアになっていない場合、そのセルは未完成
+            if (!is_paired) {
                 return false;
             }
-        }
-    }
-    // 下2行
-    for (int y = size - 2; y < size; ++y) {
-        for (int x = 0; x < size; ++x) {
-            if (field[y][x] != (x < size - 1 ? field[y][x+1] : -1) &&
-                field[y][x] != (y < size - 1 ? field[y+1][x] : -1)) {
-                return false;
-            }
-        }
-    }
-    // 左2列 (上下2行を除く)
-    for (int x = 0; x < 2; ++x) {
-        for (int y = 2; y < size - 2; ++y) {
-            if (field[y][x] != field[y][x+1] && field[y][x] != field[y+1][x]) return false;
-        }
-    }
-    // 右2列 (上下2行を除く)
-    for (int x = size - 2; x < size; ++x) {
-        for (int y = 2; y < size - 2; ++y) {
-            if (field[y][x] != (x < size - 1 ? field[y][x+1] : -1) && field[y][x] != field[y+1][x]) return false;
         }
     }
     return true;

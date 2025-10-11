@@ -74,12 +74,12 @@ int main()
           vector<vector<int>> sub_field = cut_field(field, offset, offset, current_size);
 
           vector<Operation> rim_ops = beam_search(
-              sub_field, weights, 50, 40, 5, 200, 150,
+              sub_field, weights, 60, 30, 5, 100, 150,
               [&](vector<vector<int>>& f) {
                   return check_outer_rim_filled(f);
               },
               [&](const vector<vector<int>>& f) {
-                  return evaluate_outer_rim_pairs(f) - measure_distance(f) / 10;
+                  return evaluate_outer_rim_pairs(f) * _weights[0];
               }
           );
 
