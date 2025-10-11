@@ -334,9 +334,11 @@ int evaluate_outer_rim_pairs(const vector<vector<int>>& field)
 
     long long total_score = 0;
 
-    const auto get_rim_weight = [&](int pos) {
-        if (pos == 0 || pos == field_size - 1) return 4; // 最も外側
-        if (pos == 1 || pos == field_size - 2) return 2; // 2番目に外側
+    const auto get_rim_weight = [&](int pos) -> int {
+        if (pos == 0 || pos == field_size - 1) return 8; // 最も外側
+        if (pos == 1 || pos == field_size - 2) return 4; // 2番目に外側
+        if (pos == 2 || pos == field_size - 3) return 2; // 3番目に外側
+        if (pos == 3 || pos == field_size - 4) return 1; // 4番目に外側
         return 0;
     };
 
@@ -345,7 +347,7 @@ int evaluate_outer_rim_pairs(const vector<vector<int>>& field)
     {
         for (int x = 0; x < field_size - 1; ++x)
         {
-            if (field[y][x] == field[y][x + 1] && (y < 2 || y >= field_size - 2 || x < 2 || x >= field_size - 2 -1)) {
+            if (field[y][x] == field[y][x + 1] && (y < 4 || y >= field_size - 4 || x < 4 || x >= field_size - 4 -1)) {
                 total_score += get_rim_weight(y) * 2 + get_rim_weight(x) + get_rim_weight(x + 1);
             }
         }
@@ -356,7 +358,7 @@ int evaluate_outer_rim_pairs(const vector<vector<int>>& field)
     {
         for (int x = 0; x < field_size; ++x)
         {
-            if (field[y][x] == field[y + 1][x] && (y < 2 || y >= field_size - 2 -1 || x < 2 || x >= field_size - 2)) {
+            if (field[y][x] == field[y + 1][x] && (y < 4 || y >= field_size - 4 -1 || x < 4 || x >= field_size - 4)) {
                 total_score += get_rim_weight(x) * 2 + get_rim_weight(y) + get_rim_weight(y + 1);
             }
         }
