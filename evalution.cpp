@@ -360,3 +360,89 @@ int evaluate_outer_rim_pairs(const vector<vector<int>>& field)
 
     return static_cast<int>(total_score);
 }
+
+// 完成したペアの連結性を評価する
+// 隣接するペアが多いほど高スコア
+int evaluate_connectivity(const vector<vector<int>>& field)
+{
+    const int field_size = field.size();
+    if (field_size == 0)
+    {
+        return 0;
+    }
+
+    int connectivity_score = 0;
+
+    // 水平方向のペアの隣接をチェック
+    for (int y = 0; y < field_size; ++y)
+    {
+        for (int x = 0; x < field_size - 1; ++x)
+        {
+            if (field[y][x] == field[y][x + 1])
+            {
+                // 下に水平ペアがあるか
+                if (y < field_size - 1 && field[y + 1][x] == field[y + 1][x + 1])
+                {
+                    connectivity_score++;
+                }
+                // 右に水平ペアがあるか
+                if (x < field_size - 2 && field[y][x + 1] == field[y][x + 2])
+                {
+                    connectivity_score++;
+                }
+            }
+        }
+    }
+
+    // 垂直方向のペアの隣接をチェック
+    for (int y = 0; y < field_size - 1; ++y)
+    {
+        for (int x = 0; x < field_size; ++x)
+        {
+            if (field[y][x] == field[y + 1][x])
+            {
+                // 右に垂直ペアがあるか
+                if (x < field_size - 1 && field[y][x + 1] == field[y + 1][x + 1])
+                {
+                    connectivity_score++;
+                }
+            }
+        }
+    }
+
+    return connectivity_score;
+}
+
+// ペア候補間の障害物の数を数える
+int count_obstacles(const vector<vector<int>>& field)
+{
+    const int field_size = field.size();
+    if (field_size == 0)
+    {
+        return 0;
+    }
+
+    std::unordered_map<int, Point> first_pos;
+    first_pos.reserve(field_size * field_size / 2);
+    int obstacle_count = 0;
+
+    for (int y = 0; y < field_size; ++y)
+    {
+        for (int x = 0; x < field_size; ++x)
+        {
+            int number = field[y][x];
+            auto it = first_pos.find(number);
+
+            if (it == first_pos.end())
+            {
+                first_pos.emplace(number, Point{x, y});
+            }
+            else
+            {
+                const Point p1 = it->second;
+                obstacle_count += abs(p1.x - x) + abs(p1.y - y) - 1;
+            }
+        }
+    }
+    return obstacle_count;
+}

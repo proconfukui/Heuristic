@@ -25,3 +25,5 @@ vector<vector<int>> add_matrix(const vector<vector<int>>& matrix1,const vector<v
 vector<vector<int>> create_around_weight_matrix(int size);
 int evaluate_edge_pairs(const vector<vector<int>>& field, int edge_weight);
 int evaluate_outer_rim_pairs(const vector<vector<int>>& field);
+int evaluate_connectivity(const vector<vector<int>>& field);
+int count_obstacles(const vector<vector<int>>& field);

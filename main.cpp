@@ -109,13 +109,44 @@ int main()
 
   } else {
       // --- 既存のアルゴリズム (フィールドサイズ < 16 の場合) ---
-      vector<Operation> answer1 = beam_search(field, weights, 50, 30, 5, 200, 100, 
-          [max_pair_number](const vector<vector<int>> &f){ return 100 * count_pair(f) / max_pair_number > 50; },
-          [&field](const vector<vector<int>> &f){ return evaluate_edge_pairs(field, 3) * _weights[0] - measure_distance(f); });
+      auto dynamic_evaluator = [max_pair_number](const vector<vector<int>> &f) {
+          int pairs = count_pair(f);
+          double progress = (max_pair_number > 0) ? static_cast<double>(pairs) / max_pair_number : 0.0;
+
+          double w_count, w_dist, w_connect, w_obstacle;
+
+          if (progress < 0.4) { // 序盤: ピースを近づけるのを重視
+              w_count = 100.0;
+              w_dist = 2.0;
+              w_connect = 50.0;
+              w_obstacle = 1.0;
+          } else if (progress < 0.8) { // 中盤: ペア作りを重視
+              w_count = 200.0;
+              w_dist = 1.0;
+              w_connect = 100.0;
+              w_obstacle = 0.5;
+          } else { // 終盤: ペアの連結と仕上げを重視
+              w_count = 150.0;
+              w_dist = 0.5;
+              w_connect = 300.0;
+              w_obstacle = 0.2;
+          }
+
+          return static_cast<int>(
+              pairs * w_count
+              + evaluate_connectivity(f) * w_connect
+              - measure_distance(f) * w_dist
+              - count_obstacles(f) * w_obstacle
+          );
+      };
+
+      vector<Operation> answer1 = beam_search(field, weights, 50, 30, 5, 200, 100,
+          [max_pair_number](const vector<vector<int>> &f){ return (max_pair_number > 0) && (100 * count_pair(f) / max_pair_number > 80); },
+          dynamic_evaluator);
       apply_ops(field, answer1);
-      vector<Operation> answer2 = beam_search(field, weights, 100, 60, 5, 200, 100, 
+      vector<Operation> answer2 = beam_search(field, weights, 100, 60, 5, 200, 100,
           [](const vector<vector<int>> &f){ return check_all_pair(f); },
-          [](const vector<vector<int>> &f){ return count_pair(f) * _weights[0] - measure_distance(f); });
+          dynamic_evaluator);
 
       answer.insert(answer.end(), answer1.begin(), answer1.end());
       answer.insert(answer.end(), answer2.begin(), answer2.end());
