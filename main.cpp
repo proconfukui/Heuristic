@@ -80,9 +80,9 @@ int main()
   // 端から揃える方法
   vector<vector<int>> tmp_field = field;
   int chenge_point = 0;
-  if (field.size() > 14)
+  if (field.size() > 8)
   {
-    chenge_point = 12;
+    chenge_point = 8;
   }
   else
   {
@@ -226,9 +226,12 @@ vector<Operation> beam_search(const vector<vector<int>> &field, vector<float> we
 
     for (int d = 0; d < depth; d++)
     {
+      // cerr << "depth: " << d << endl;
       // 層ごとに next_nodes を作成し直す（ムーブ後のクリア等によるライフタイム問題を回避）
       vector<BeamNode> next_nodes;
       next_nodes.reserve(std::max(1, (int)nodes.size()) * std::max(1, width));
+
+      // cerr << "reserve finished" << endl;
 
       // next_nodeに新しい生成されるnodeを作る
       for (const auto &node : nodes)
@@ -248,6 +251,8 @@ vector<Operation> beam_search(const vector<vector<int>> &field, vector<float> we
           next_nodes.emplace_back(std::move(work_field), std::move(new_ops), score);
         }
       }
+
+      // cerr << "reserve finished" << endl;
 
       // next_nodeから評価値の高いwidth個のnodeを抽出
       if (next_nodes.size() > width)

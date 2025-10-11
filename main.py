@@ -250,10 +250,10 @@ def main():
         pool.terminate() # 実行中のタスクを強制終了
         pool.join()
         print("すべてのプロセスが終了しました。")
-        if os.path.exists(PROBLEM_PATH):
-            os.remove(PROBLEM_PATH)
-            print(f"'{PROBLEM_PATH}' を削除しました。")
-        for path in glob.glob("testcase/answer_*.json") + glob.glob("testcase/problem_*.txt") + glob.glob("testcase/answer_*.txt"):
+        # if os.path.exists(PROBLEM_PATH):
+        #     os.remove(PROBLEM_PATH)
+        #     print(f"'{PROBLEM_PATH}' を削除しました。")
+        for path in glob.glob("testcase/answer*.json") + glob.glob("testcase/problem*.txt") + glob.glob("testcase/answer*.txt"):
             os.remove(path)
             print(f"'{path}' を削除しました。")
 
