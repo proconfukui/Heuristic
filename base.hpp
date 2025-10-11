@@ -22,5 +22,4 @@ vector<vector<int>> cut_field(vector<vector<int>> field, int x, int y, int n);
 vector<Operation> correct_op(const vector<Operation>& ops,int x,int y);
 bool check_all_pair(const vector<vector<int>> &field);
 bool check_around_pair(const vector<vector<int>> &field);
-
-
+bool check_outer_rim_filled(const vector<vector<int>>& field);

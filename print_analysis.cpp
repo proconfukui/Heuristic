@@ -57,7 +57,7 @@ void analys_answer(const vector<Operation>& ops,const vector<vector<int>>& field
   {
     rotate(tmp_field, op);
     values.push_back(evaluator(tmp_field));
-    pair_ratios.push_back(static_cast<int>(count_pair(tmp_field)) / max_pair_number);
+    pair_ratios.push_back(100 *count_pair(tmp_field) / max_pair_number);
   }
 }
 

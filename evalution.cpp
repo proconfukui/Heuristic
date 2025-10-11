@@ -7,6 +7,7 @@
 
 using std::cerr;
 using std::endl;
+using std::min;
 using std::function;
 using std::vector;
 
@@ -198,7 +199,7 @@ vector<vector<int>> create_x2y2_weight_matrix(int size)
   return matrix;
 }
 
-// フィールドの上と左の二マスのペアだけ評価する
+// フィールドの周囲二マスのペアだけ評価する
 vector<vector<int>> create_around_weight_matrix(int size)
 {
   vector<vector<int>> matrix = vector<vector<int>>(size, vector<int>(size, 0));
@@ -207,7 +208,7 @@ vector<vector<int>> create_around_weight_matrix(int size)
     for (int x = 0; x < size; x++)
     {
 
-      if (x == 0 || x == 1 || y == 0 || y == 1)
+      if (x == 0 || x == 1 || y == 0 || y == 1||x==size-1||x==size-2||y==size-1||y==size-2)
       {
         matrix[y][x] = 1;
       }
@@ -218,6 +219,52 @@ vector<vector<int>> create_around_weight_matrix(int size)
     }
   }
   return matrix;
+}
+
+// 1.1 隅のペアを評価する (プロジェクトに合わせて修正)
+// ペアがフィールドの隅に近いほど高いスコアを付ける評価関数。
+// edge_weight はペナルティの重み。
+int evaluate_edge_pairs(const vector<vector<int>>& field, int edge_weight)
+{
+    const int field_size = field.size();
+    if (field_size == 0)
+    {
+        return 0;
+    }
+    
+    long long total_score = 0;
+    const int max_pair_number = field_size * field_size / 2;
+
+    // 水平方向のペアをチェック
+    for (int y = 0; y < field_size; ++y)
+    {
+        for (int x = 0; x < field_size - 1; ++x)
+        {
+            if (field[y][x] == field[y][x + 1])
+            {
+                int penalty = (min(x, field_size - 1 - x) + min(y, field_size - 1 - y) +
+                               min(x + 1, field_size - 1 - (x + 1)) + min(y, field_size - 1 - y));
+                total_score += _weights[1] - edge_weight * penalty;
+            }
+        }
+    }
+
+    // 垂直方向のペアをチェック
+    for (int y = 0; y < field_size - 1; ++y)
+    {
+        for (int x = 0; x < field_size; ++x)
+        {
+            if (field[y][x] == field[y + 1][x])
+            {
+                int penalty = (min(x, field_size - 1 - x) + min(y, field_size - 1 - y) +
+                               min(x, field_size - 1 - x) + min(y + 1, field_size - 1 - (y + 1)));
+                total_score += _weights[1] - edge_weight * penalty;
+            }
+        }
+    }
+
+    // スケールを調整して返す（オーバーフローを避けるためlong longで計算）
+    return static_cast<int>(total_score / (max_pair_number + 1));
 }
 
 // ペアの数を重みを付けて計算する
@@ -274,4 +321,42 @@ int func4(const vector<vector<int>> &field)
   int term2 = measure_distance(field) * _weights[1];
   // cerr << term1 <<" "<< term2<<endl;
   return term1 - term2;
+}
+
+// 外周2マスにあるペアを評価する。外側ほど高スコア。
+int evaluate_outer_rim_pairs(const vector<vector<int>>& field)
+{
+    const int field_size = field.size();
+    if (field_size < 4)
+    {
+        return 0;
+    }
+
+    long long total_score = 0;
+
+    auto get_rim_weight = [&](int pos) {
+        if (pos == 0 || pos == field_size - 1) return 4; // 最も外側
+        if (pos == 1 || pos == field_size - 2) return 2; // 2番目に外側
+        return 0;
+    };
+
+    // 水平方向のペアをチェック
+    for (int y = 0; y < field_size; ++y) {
+        for (int x = 0; x < field_size - 1; ++x) {
+            if (field[y][x] == field[y][x + 1]) {
+                total_score += get_rim_weight(y) + get_rim_weight(x) + get_rim_weight(x + 1);
+            }
+        }
+    }
+
+    // 垂直方向のペアをチェック
+    for (int y = 0; y < field_size - 1; ++y) {
+        for (int x = 0; x < field_size; ++x) {
+            if (field[y][x] == field[y + 1][x]) {
+                total_score += get_rim_weight(x) + get_rim_weight(y) + get_rim_weight(y + 1);
+            }
+        }
+    }
+
+    return static_cast<int>(total_score);
 }

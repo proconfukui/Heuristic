@@ -66,27 +66,60 @@ int main()
   // ビームサーチによる探索
   // 処理時間は幅に比例
   int max_pair_number = field_size * field_size / 2;
+  if (field_size >= 16) {
+      // --- フェーズ1: 外堀を埋める ---
+      int offset = 0;
+      for (int current_size = field_size; current_size > 16; current_size -= 4) {
+          cerr << "Solving outer rim for size " << current_size << "..." << endl;
+          vector<vector<int>> sub_field = cut_field(field, offset, offset, current_size);
 
-  vector<Operation> answer1 = beam_search(field, weights, 100, 60, 5, 200, 100, [&max_pair_number](const vector<vector<int>> &field)
-                                          { int ratio = 100 * count_pair(field)  / max_pair_number;
-                                           // cerr << ratio << "%"<<endl;
-                                            return ratio > 80; }, [](const vector<vector<int>> &field)
-                                          { int param1 = count_pair(field);
-                                            int param2 = measure_distance(field);
-                                            // cerr << param1 << " " << param2 << endl;                                            
-                                            return count_pair(field) * _weights[0] - measure_distance(field); });
-  apply_ops(field, answer1);
-  vector<Operation> answer2 = beam_search(field, weights, 200, 50, 3, 200, 100, [&max_pair_number](const vector<vector<int>> &field)
-                                          { int ratio = 100 * count_pair(field)  / max_pair_number;
-                                            //cerr << ratio << "%"<<endl;
-                                            return count_pair(field) == max_pair_number; }, [](const vector<vector<int>> &field)
-                                          { int param1 = count_pair(field);
-                                            int param2 = measure_distance(field);
-                                            // cerr << param1 << " " << param2 << endl;
-                                            return count_pair(field) * _weights[1] - measure_distance(field); });
+          vector<Operation> rim_ops = beam_search(
+              sub_field, weights, 50, 40, 5, 200, 150,
+              [&](vector<vector<int>>& f) {
+                  return check_outer_rim_filled(f);
+              },
+              [&](const vector<vector<int>>& f) {
+                  return evaluate_outer_rim_pairs(f) - measure_distance(f) / 10;
+              }
+          );
 
-  answer.insert(answer.end(), answer1.begin(), answer1.end());
-  answer.insert(answer.end(), answer2.begin(), answer2.end());
+          vector<Operation> corrected_ops = correct_op(rim_ops, offset, offset);
+          answer.insert(answer.end(), corrected_ops.begin(), corrected_ops.end());
+          apply_ops(field, corrected_ops);
+          offset += 2;
+      }
+
+      // --- フェーズ2: 中央の16x16を解く ---
+      cerr << "Solving center 16x16..." << endl;
+      vector<vector<int>> center_field = cut_field(field, offset, offset, 16);
+      vector<Operation> center_ops_1 = beam_search(center_field, weights, 70, 40, 5, 200, 100, 
+          [](const vector<vector<int>> &f){ return 100 * count_pair(f) / (16*16/2) > 80; },
+          [](const vector<vector<int>> &f){ return count_pair(f) * _weights[0] - measure_distance(f); }
+      );
+      apply_ops(center_field, center_ops_1);
+      vector<Operation> center_ops_2 = beam_search(center_field, weights, 100, 60, 5, 200, 100, 
+          [](const vector<vector<int>> &f){ return check_all_pair(f); },
+          [](const vector<vector<int>> &f){ return count_pair(f) * _weights[0] - measure_distance(f); }
+      );
+
+      vector<Operation> corrected_center_ops_1 = correct_op(center_ops_1, offset, offset);
+      vector<Operation> corrected_center_ops_2 = correct_op(center_ops_2, offset, offset);
+      answer.insert(answer.end(), corrected_center_ops_1.begin(), corrected_center_ops_1.end());
+      answer.insert(answer.end(), corrected_center_ops_2.begin(), corrected_center_ops_2.end());
+
+  } else {
+      // --- 既存のアルゴリズム (フィールドサイズ < 16 の場合) ---
+      vector<Operation> answer1 = beam_search(field, weights, 50, 30, 5, 200, 100, 
+          [max_pair_number](const vector<vector<int>> &f){ return 100 * count_pair(f) / max_pair_number > 50; },
+          [&field](const vector<vector<int>> &f){ return evaluate_edge_pairs(field, 3) * _weights[0] - measure_distance(f); });
+      apply_ops(field, answer1);
+      vector<Operation> answer2 = beam_search(field, weights, 100, 60, 5, 200, 100, 
+          [](const vector<vector<int>> &f){ return check_all_pair(f); },
+          [](const vector<vector<int>> &f){ return count_pair(f) * _weights[0] - measure_distance(f); });
+
+      answer.insert(answer.end(), answer1.begin(), answer1.end());
+      answer.insert(answer.end(), answer2.begin(), answer2.end());
+  }
 
   // ---------------------------------------------------------------------------------------------------------------------------------
 

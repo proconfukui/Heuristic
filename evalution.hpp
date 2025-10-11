@@ -23,4 +23,5 @@ vector<vector<int>> create_x2y2_weight_matrix(int size);
 vector<vector<int>> add_matrix(const vector<vector<int>>& matrix1,const vector<vector<int>>& matrix2);
 // vector<vector<int>> product_matrix(const vector<vector<int>>& field,int term);
 vector<vector<int>> create_around_weight_matrix(int size);
-
+int evaluate_edge_pairs(const vector<vector<int>>& field, int edge_weight);
+int evaluate_outer_rim_pairs(const vector<vector<int>>& field);

@@ -156,6 +156,44 @@ bool check_around_pair(const vector<vector<int>> &field)
   return counter == (field_size * 2 - 2);
 }
 
+// 外周2マスがすべてペアで埋まっているかチェックする
+bool check_outer_rim_filled(const vector<vector<int>>& field) {
+    const int size = field.size();
+    if (size < 4) return true; // 4未満ならチェック不要
+
+    // 上2行
+    for (int y = 0; y < 2; ++y) {
+        for (int x = 0; x < size; ++x) {
+            if (field[y][x] != (x < size - 1 ? field[y][x+1] : -1) &&
+                field[y][x] != (y < 1 ? field[y+1][x] : -1)) {
+                return false;
+            }
+        }
+    }
+    // 下2行
+    for (int y = size - 2; y < size; ++y) {
+        for (int x = 0; x < size; ++x) {
+            if (field[y][x] != (x < size - 1 ? field[y][x+1] : -1) &&
+                field[y][x] != (y < size - 1 ? field[y+1][x] : -1)) {
+                return false;
+            }
+        }
+    }
+    // 左2列 (上下2行を除く)
+    for (int x = 0; x < 2; ++x) {
+        for (int y = 2; y < size - 2; ++y) {
+            if (field[y][x] != field[y][x+1] && field[y][x] != field[y+1][x]) return false;
+        }
+    }
+    // 右2列 (上下2行を除く)
+    for (int x = size - 2; x < size; ++x) {
+        for (int y = 2; y < size - 2; ++y) {
+            if (field[y][x] != (x < size - 1 ? field[y][x+1] : -1) && field[y][x] != field[y+1][x]) return false;
+        }
+    }
+    return true;
+}
+
 bool check_all_pair(const vector<vector<int>> &field)
 {
   int field_size = field.size();
