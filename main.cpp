@@ -107,7 +107,7 @@ int main()
   // print_matrix(field);
   vector<Operation> answer;
 
-  int change_point = 16; 
+  int change_point = 14; 
   int remaining_field_offset = 0;
 
   if (field_size > change_point) {
@@ -115,16 +115,19 @@ int main()
       answer.insert(answer.end(), outer_result.first.begin(), outer_result.first.end());
       remaining_field_offset = outer_result.second;
   }
+  Field remaining_field = cut_field(field, remaining_field_offset, remaining_field_offset, field_size - 2 * remaining_field_offset);
 
   // 残った中央部分をビームサーチで解く
-  vector<Operation> answer2 = beam_search(field, weights, 200, 50, 2, 400, 100, 5, [&](const Field& f){
+  vector<Operation> answer2 = beam_search(remaining_field, weights, 200, 100, 2, 400, 100, 5, [&](const Field& f){
       return  100 * count_pair(f) / (field_size * field_size / 2) > 90 ;
   },
       [&weights](const Field& f){ return count_pair(f) * weights[0] - measure_distance(f); });
-  apply_ops(field, answer2);
+  apply_ops(remaining_field, answer2);
   vector<Operation> corrected_ops2 = correct_op(answer2, remaining_field_offset, remaining_field_offset);
 
-  vector<Operation> answer3 = beam_search(field, weights, 200, 70, 2, 600, 100, 5, check_all_pair,
+  vector<Operation> answer3 = beam_search(remaining_field, weights, 200, 70, 2, 600, 100, 5, [&](const Field& f){
+      return  100 * count_pair(f) / (field_size * field_size / 2) ==100 ;
+  },
       [&weights](const Field& f){ return count_pair(f) * weights[0] - measure_distance(f); });
   vector<Operation> corrected_ops3 = correct_op(answer3, remaining_field_offset, remaining_field_offset);
 
