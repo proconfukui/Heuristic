@@ -99,11 +99,11 @@ vector<Operation> calculate_shortest_moves_with_obstacles(
         exit(1);
     }
 
-    std::vector<std::vector<int>> distances(field_size, std::vector<int>(field_size, -1));
+    std::vector<int> distances(field_size * field_size, -1);
     
 
     
-    distances[start_y][start_x] = 0;
+    distances[start_y * field_size + start_x] = 0;
     
     while (!queue.empty()) {
         BFSNode current = queue.front();
@@ -137,8 +137,9 @@ vector<Operation> calculate_shortest_moves_with_obstacles(
 
                     Point next_pos = get_rotated_pos(current.x, current.y, rx, ry, n);
                     
-                    if (distances[next_pos.y][next_pos.x] == -1 && !fixed_cells.count({next_pos.x, next_pos.y})) {
-                        distances[next_pos.y][next_pos.x] = current.dist + 1;
+                    const int next_idx = next_pos.y * field_size + next_pos.x;
+                    if (distances[next_idx] == -1 && !fixed_cells.count({next_pos.x, next_pos.y})) {
+                        distances[next_idx] = current.dist + 1;
                         vector<Operation> new_path = current.path;
                         new_path.push_back({rx,ry,n});
                         queue.push_back({next_pos.x, next_pos.y, current.dist + 1,new_path});

@@ -41,6 +41,49 @@ vector<Operation> beam_search(const Field& field, vector<int> weights, int depth
 vector<Operation> best_operations_random(const Field& field, int num_sample, int width, const function<int(const Field&)>& evaluator);
 vector<Operation> best_operations_random2(const Field& field, int num_sample, int width, int random_injection_ratio, const function<int(const Field&)>& evaluator);
 vector<Operation> a_star(const Field& field, const vector<int>& weights, const function<int(const Field&)>& evaluator);
+pair<vector<Operation>, int> solve_outer_layer(Field& field, int change_point);
+
+
+/**
+ * @brief フィールドの外周2マスを確定させる処理
+ * @param field 対象のフィールド（この関数内で変更されます）
+ * @param change_point このサイズ以下になったら処理を終了する
+ * @return 外周を揃えるための一連の操作
+ */
+pair<vector<Operation>, int> solve_outer_layer(Field& field, int change_point) {
+    vector<Operation> ops;
+    int initial_field_size = field.size;
+    int final_layer = 0;
+
+    for (int layer = 0; (initial_field_size - 2 * layer) > change_point; layer += 2) {
+        int current_size = initial_field_size - 2 * layer;
+        Field current_field = cut_field(field, layer, layer, current_size);
+
+        // 上2行を揃える
+        for (int y = 0; y < 2; ++y) {
+            for (int x = (y == 0) ? 1 : 0; x < current_size - 1; x += 2) {
+                vector<Operation> tmp_ops = calculate_shortest_moves_with_obstacles(current_field, 1, x, y);
+                apply_ops(current_field, tmp_ops);
+                vector<Operation> corrected_ops = correct_op(tmp_ops, layer, layer);
+                ops.insert(ops.end(), corrected_ops.begin(), corrected_ops.end());
+            }
+        }
+        // 左2列を揃える
+        for (int x = 0; x < 2; ++x) {
+            // 上2行はすでに揃っているので、y=2から始める
+            for (int y = (x == 0) ? 3 : 2; y < current_size; y += 2) {
+                vector<Operation> tmp_ops = calculate_shortest_moves_with_obstacles(current_field, 2, x, y);
+                apply_ops(current_field, tmp_ops);
+                vector<Operation> corrected_ops = correct_op(tmp_ops, layer, layer);
+                ops.insert(ops.end(), corrected_ops.begin(), corrected_ops.end());
+            }
+        }
+        final_layer = layer + 2;
+        field = cut_field(current_field, 2, 2, current_size - 2);
+    }
+
+    return {ops, final_layer};
+}
 
 int main()
 {
@@ -64,40 +107,30 @@ int main()
   // print_matrix(field);
   vector<Operation> answer;
 
-  // ビームサーチによる探索
-  if (field_size >= 18) { // ある程度大きいサイズにのみ適用
-      // 探索の進行度に応じて評価関数を変化させる
-      // 序盤(progress=0.0)は外側を、終盤(progress=1.0)は内側を重視
-      // --- 既存のアルゴリズム (フィールドサイズ < 16 の場合) ---
-      vector<Operation> answer2 = beam_search(field, weights, 200, 50, 2, 300, 100, 5, [&](const Field& f){
-          return  100 * count_pair(f) / (field_size * field_size / 2) > 90 ;
-      },
-          [&weights](const Field& f){ return count_pair(f) * weights[0] - measure_distance(f); });
-      apply_ops(field, answer2);
+  int change_point = 16; 
+  int remaining_field_offset = 0;
 
-      vector<Operation> answer3 = beam_search(field, weights, 200, 70, 2, 600, 100, 5, check_all_pair,
-          [&weights](const Field& f){ return count_pair(f) * weights[0] - measure_distance(f); });
-
-      //answer.insert(answer.end(), answer1.begin(), answer1.end());
-      answer.insert(answer.end(), answer2.begin(), answer2.end());
-      answer.insert(answer.end(), answer3.begin(), answer3.end());
-  } else {
-      // --- 既存のアルゴリズム (フィールドサイズ < 16 の場合) ---
-      vector<Operation> answer2 = beam_search(field, weights, 200, 50, 2, 400, 100, 5, [&](const Field& f){
-          return  100 * count_pair(f) / (field_size * field_size / 2) > 90 ;
-      },
-          [&weights](const Field& f){ return count_pair(f) * weights[0] - measure_distance(f); });
-      apply_ops(field, answer2);
-
-      vector<Operation> answer3 = beam_search(field, weights, 200, 70, 2, 600, 100, 5, check_all_pair,
-          [&weights](const Field& f){ return count_pair(f) * weights[0] - measure_distance(f); });
-
-      //answer.insert(answer.end(), answer1.begin(), answer1.end());
-      answer.insert(answer.end(), answer2.begin(), answer2.end());
-      answer.insert(answer.end(), answer3.begin(), answer3.end());
+  if (field_size > change_point) {
+      pair<vector<Operation>, int> outer_result = solve_outer_layer(field, change_point);
+      answer.insert(answer.end(), outer_result.first.begin(), outer_result.first.end());
+      remaining_field_offset = outer_result.second;
   }
 
-  // ---------------------------------------------------------------------------------------------------------------------------------
+  // 残った中央部分をビームサーチで解く
+  vector<Operation> answer2 = beam_search(field, weights, 200, 50, 2, 400, 100, 5, [&](const Field& f){
+      return  100 * count_pair(f) / (field_size * field_size / 2) > 90 ;
+  },
+      [&weights](const Field& f){ return count_pair(f) * weights[0] - measure_distance(f); });
+  apply_ops(field, answer2);
+  vector<Operation> corrected_ops2 = correct_op(answer2, remaining_field_offset, remaining_field_offset);
+
+  vector<Operation> answer3 = beam_search(field, weights, 200, 70, 2, 600, 100, 5, check_all_pair,
+      [&weights](const Field& f){ return count_pair(f) * weights[0] - measure_distance(f); });
+  vector<Operation> corrected_ops3 = correct_op(answer3, remaining_field_offset, remaining_field_offset);
+
+  answer.insert(answer.end(), corrected_ops2.begin(), corrected_ops2.end());
+  answer.insert(answer.end(), corrected_ops3.begin(), corrected_ops3.end());
+// ---------------------------------------------------------------------------------------------------------------------------------
 
   auto end_time = std::chrono::high_resolution_clock::now();
   auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - begin_time);
