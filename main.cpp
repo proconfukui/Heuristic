@@ -80,9 +80,9 @@ int main()
   // 端から揃える方法
   vector<vector<int>> tmp_field = field;
   int chenge_point = 0;
-  if (field.size() > 8)
+  if (field.size() > 10)
   {
-    chenge_point = 8;
+    chenge_point = 10;
   }
   else
   {
