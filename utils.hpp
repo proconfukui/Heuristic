@@ -56,45 +56,23 @@ struct BFSNode {
     std::vector<Operation> path;  // 経路を記録
 };
 
-struct Field {
-    vector<int> data;
-    int size = 0;
-
-    Field() = default;
-    Field(int s) : data(s * s), size(s) {}
-    Field(const vector<vector<int>>& field2d) {
-        if (!field2d.empty()) {
-            size = field2d.size();
-            data.reserve(size * size);
-            for (const auto& row : field2d) {
-                data.insert(data.end(), row.begin(), row.end());
-            }
-        }
-    }
-
-    int& at(int y, int x) { return data[y * size + x]; }
-    const int& at(int y, int x) const { return data[y * size + x]; }
-};
 
 struct BeamNode {
-    Operation op;
+    vector<vector<int>> field;
+    vector<Operation> ops;
     int score;
-    int parent_index; // 親ノードのインデックス
-    std::shared_ptr<const Field> field_ptr;
-
+    
     // デフォルトコンストラクタ
-    BeamNode() : score(0), parent_index(-1) {}
-
+    BeamNode() : score(0.0f) {}
+    
     // コンストラクタ
-    BeamNode(const Operation& o, int s, int p_idx, std::shared_ptr<const Field> f_ptr)
-        : op(o), score(s), parent_index(p_idx), field_ptr(std::move(f_ptr)) {}
+    BeamNode(const vector<vector<int>>& f, const vector<Operation>& o, int s)
+        : field(f), ops(o), score(s) {}
+    
+    BeamNode(vector<vector<int>>&& f, vector<Operation>&& o, int s)
+        : field(std::move(f)), ops(std::move(o)), score(s) {}
 
-    // priority_queueのために<演算子を定義
-    bool operator<(const BeamNode& other) const {
-        return score < other.score;
-    }
-
-    // デフォルトのコピー、ムーブコンストラクタ、代入演算子で問題ない
+    // 明示的なムーブ/コピー（realloc時にムーブが優先されるようにnoexceptを付与）
     BeamNode(const BeamNode&) = default;
     BeamNode& operator=(const BeamNode&) = default;
     BeamNode(BeamNode&&) noexcept = default;
@@ -102,7 +80,7 @@ struct BeamNode {
 };
 
 struct State {
-    Field field;
+    vector<vector<int>> field;
     vector<Operation> ops;
     int g; // 実際にかかった手数
     int h; // 予想距離

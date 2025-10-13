@@ -12,9 +12,9 @@ using std::function;
 using std::vector;
 
 // 各座標の重み
-vector<int> _weight_matrix1;
-vector<int> _weight_matrix2;
-vector<int> _weight_matrix3;
+vector<vector<int>> _weight_matrix1;
+vector<vector<int>> _weight_matrix2;
+vector<vector<int>> _weight_matrix3;
 
 // weights[0] : ペアの数
 // weights[1] : ペア候補間の距離
@@ -24,9 +24,9 @@ vector<int> _weight_matrix3;
 vector<int> _weights;
 
 // weights(評価関数の重みと、weight_matrixを初期化)
-void initialize_evalutor(const Field& field, const vector<int> &weigths)
+void initialize_evalutor(const vector<vector<int>> &field, const vector<int> &weigths)
 {
-  int field_size = field.size;
+  int field_size = field.size();
   _weights = weigths;
   _weight_matrix1 = create_x2y2_weight_matrix(field_size);
   _weight_matrix2 = create_weight_matrix(field_size, [](int x)
@@ -36,39 +36,40 @@ void initialize_evalutor(const Field& field, const vector<int> &weigths)
 
 // ペア候補間の距離を測定する
 // テスト済
-int measure_distance(const Field& field)
- {
-     const int n = field.size;
-     if (n <= 0)
-         return 0;
- 
-     const int max_pair_number = (n * n) / 2;
- 
-     // ペアの最初の出現位置を保持するための静的ベクタ
-     // -1で初期化されているかどうかで、すでに出現したかを判断
-     static vector<Point> first_pos;
-     if (static_cast<int>(first_pos.size()) < max_pair_number) {
-         first_pos.resize(max_pair_number);
-     }
-     std::fill(first_pos.begin(), first_pos.begin() + max_pair_number, Point{-1, -1});
- 
-     int total_distance = 0;
-     for (int i = 0; i < n * n; ++i) {
-         int number = field.data[i];
-         if (number >= 0 && number < max_pair_number) {
-             if (first_pos[number].x == -1) {
-                 first_pos[number] = {i % n, i / n};
-             } else {
-                 int x = i % n;
-                 int y = i / n;
-                 int dx = first_pos[number].x - x;
-                 int dy = first_pos[number].y - y;
-                 total_distance += dx * dx + dy * dy;
-             }
-         }
-     }
-     return total_distance;
- }
+int measure_distance(const vector<vector<int>> &field)
+{
+  // ラベル値（number）がサブフィールドでは連続かつ小さいとは限らないため、
+  // 動的なマップで最初の出現座標を保持し、2回目で距離を加算する。
+  int field_size = field.size();
+  const int n = static_cast<int>(field_size);
+  if (n <= 0)
+    return 0;
+
+  std::unordered_map<int, std::pair<int, int>> first_pos;
+  first_pos.reserve(n * n / 2);
+
+  int total = 0;
+  for (int y = 0; y < n; ++y)
+  {
+    for (int x = 0; x < n; ++x)
+    {
+      int number = field[y][x];
+      auto it = first_pos.find(number);
+      if (it == first_pos.end())
+      {
+        first_pos.emplace(number, std::make_pair(x, y));
+      }
+      else
+      {
+        int dx = it->second.first - x;
+        int dy = it->second.second - y;
+        total += dx * dx + dy * dy;
+        // 必要なら消してもよいが、2回出現想定なので放置でも可
+      }
+    }
+  }
+  return total;
+}
 
 // // ペア候補間の距離を測定する（高速版: 1パス・動的配列の再利用）
 // int measure_distance(const vector<vector<int>> &field)
@@ -119,10 +120,10 @@ int measure_distance(const Field& field)
 // ある関数を与えることにより、その関数をZ軸を中心に回転させたときの、(X,Y)のZの大きさが格納された大きさsizeの二重配列を返す
 // 最大値が1になるように標準化される
 // テスト済
-vector<int> create_weight_matrix(int size, function<int(int)> func)
+vector<vector<int>> create_weight_matrix(int size, function<int(int)> func)
 {
   int center = size / 2;
-  vector<int> matrix(size * size, -1);
+  vector<vector<int>> matrix = vector<vector<int>>(size, vector<int>(size, -1));
   int max_value = 0;
 
   // まず、すべての値を計算
@@ -148,13 +149,13 @@ vector<int> create_weight_matrix(int size, function<int(int)> func)
       {
         y_dis = y - center + 1;
       }
-      int distance = pow(pow(x_dis, 2) + pow(y_dis, 2), 0.5);
-      matrix[y * size + x] = func(distance);
+      int distance = static_cast<int>(pow(pow(static_cast<double>(x_dis), 2.0) + pow(static_cast<double>(y_dis), 2.0), 0.5));
+      matrix[y][x] = func(distance);
 
       // 最大値を追跡
-      if (matrix[y * size + x] > max_value)
+      if (matrix[y][x] > max_value)
       {
-        max_value = matrix[y * size + x];
+        max_value = matrix[y][x];
       }
     }
   }
@@ -162,43 +163,46 @@ vector<int> create_weight_matrix(int size, function<int(int)> func)
   return matrix;
 }
 
-vector<int> add_matrix(const vector<int> &matrix1, const vector<int> &matrix2)
+vector<vector<int>> add_matrix(const vector<vector<int>> &matrix1, const vector<vector<int>> &matrix2)
 {
-  size_t size = matrix1.size();
-  vector<int> matrix(size, 0);
-  for (size_t i = 0; i < size; ++i)
+  int size = matrix1.size();
+  vector<vector<int>> matrix = vector<vector<int>>(size, vector<int>(size, 0));
+  for (int y = 0; y < size; y++)
   {
-    matrix[i] = matrix1[i] + matrix2[i];
+    for (int x = 0; x < size; x++)
+    {
+      matrix[y][x] = matrix1[y][x] + matrix2[y][x];
+    }
   }
   // print_matrix(matrix);
   return matrix;
 }
 
 // z = (xy)^2の分布に基づいた重みの二重配列を返す
-vector<int> create_x2y2_weight_matrix(int size)
+vector<vector<int>> create_x2y2_weight_matrix(int size)
 {
-  vector<int> matrix(size * size, 0);
+  vector<vector<int>> matrix = vector<vector<int>>(size, vector<int>(size, 0));
 
   for (int y = 0; y < size; y++)
   {
     for (int x = 0; x < size; x++)
     {
       // (x,y)を[-1,1]の範囲にマッピング
-      double normalized_x = (2.0 * x) / (size - 1) - 1.0;
-      double normalized_y = (2.0 * y) / (size - 1) - 1.0;
+      int normalized_x = (2 * x) / (size - 1) - 1;
+      int normalized_y = (2 * y) / (size - 1) - 1;
 
       // z = (xy)^2 を計算
-      double z = pow(normalized_x * normalized_y, 2.0);
-      matrix[y * size + x] = static_cast<int>(z * 100); // Scale to int
+      int z = pow(normalized_x * normalized_y, 2);
+      matrix[y][x] = z;
     }
   }
   return matrix;
 }
 
 // フィールドの周囲二マスのペアだけ評価する
-vector<int> create_around_weight_matrix(int size)
+vector<vector<int>> create_around_weight_matrix(int size)
 {
-  vector<int> matrix(size * size, 0);
+  vector<vector<int>> matrix = vector<vector<int>>(size, vector<int>(size, 0));
   for (int y = 0; y < size; y++)
   {
     for (int x = 0; x < size; x++)
@@ -206,11 +210,11 @@ vector<int> create_around_weight_matrix(int size)
 
       if (x == 0 || x == 1 || y == 0 || y == 1||x==size-1||x==size-2||y==size-1||y==size-2)
       {
-        matrix[y * size + x] = 1;
+        matrix[y][x] = 1;
       }
       else
       {
-        matrix[y * size + x] = 0;
+        matrix[y][x] = 0;
       }
     }
   }
@@ -220,9 +224,9 @@ vector<int> create_around_weight_matrix(int size)
 // 1.1 隅のペアを評価する (プロジェクトに合わせて修正)
 // ペアがフィールドの隅に近いほど高いスコアを付ける評価関数。
 // edge_weight はペナルティの重み。
-int evaluate_edge_pairs(const Field& field, int edge_weight)
+int evaluate_edge_pairs(const vector<vector<int>>& field, int edge_weight)
 {
-    const int field_size = field.size;
+    const int field_size = field.size();
     if (field_size == 0)
     {
         return 0;
@@ -236,11 +240,11 @@ int evaluate_edge_pairs(const Field& field, int edge_weight)
     {
         for (int x = 0; x < field_size - 1; ++x)
         {
-            if (field.at(y, x) == field.at(y, x + 1))
+            if (field[y][x] == field[y][x + 1])
             {
                 int penalty = (min(x, field_size - 1 - x) + min(y, field_size - 1 - y) +
                                min(x + 1, field_size - 1 - (x + 1)) + min(y, field_size - 1 - y));
-                total_score += _weights[2] - edge_weight * penalty * penalty;
+                total_score += 1000 - edge_weight * penalty;
             }
         }
     }
@@ -250,11 +254,11 @@ int evaluate_edge_pairs(const Field& field, int edge_weight)
     {
         for (int x = 0; x < field_size; ++x)
         {
-            if (field.at(y, x) == field.at(y + 1, x))
+            if (field[y][x] == field[y + 1][x])
             {
                 int penalty = (min(x, field_size - 1 - x) + min(y, field_size - 1 - y) +
                                min(x, field_size - 1 - x) + min(y + 1, field_size - 1 - (y + 1)));
-                total_score += _weights[2] - edge_weight * penalty * penalty;
+                total_score += 1000 - edge_weight * penalty;
             }
         }
     }
@@ -264,47 +268,46 @@ int evaluate_edge_pairs(const Field& field, int edge_weight)
 }
 
 // ペアの数を重みを付けて計算する
-int count_weighted_pair(const Field& field, const vector<int>& weight_matrix)
+int count_weighted_pair(const vector<vector<int>> &field, const vector<vector<int>> &weight_matrix)
 {
-  int field_size = field.size;
-  if (field_size <= 1) return 0;
-
+  int field_size = field.size();
   int counter = 0;
-  const auto& data = field.data;
-
-  // 水平方向
-  for (int y = 0; y < field_size; ++y) {
-    int row_start = y * field_size;
-    for (int x = 0; x < field_size - 1; ++x) {
-      int idx = row_start + x;
-      if (data[idx] == data[idx + 1]) {
-        counter += weight_matrix[idx] + weight_matrix[idx + 1];
+  for (int y = 0; y < field_size; y++)
+  {
+    for (int x = 0; x < field_size - 1; x++)
+    {
+      if (field[y][x] == field[y][x + 1])
+      {
+        counter += weight_matrix[y][x] + weight_matrix[y][x + 1];
       }
     }
   }
-
-  // 垂直方向
-  for (int i = 0; i < field_size * (field_size - 1); ++i) {
-    if (data[i] == data[i + field_size]) {
-      counter += weight_matrix[i] + weight_matrix[i + field_size];
+  for (int y = 0; y < field_size - 1; y++)
+  {
+    for (int x = 0; x < field_size; x++)
+    {
+      if (field[y][x] == field[y + 1][x])
+      {
+        counter += weight_matrix[y][x] + weight_matrix[y + 1][x];
+      }
     }
   }
   return counter;
 }
 
-int func1(const Field& field)
+int func1(const vector<vector<int>> &field)
 {
   return count_weighted_pair(field, _weight_matrix1);
 }
 
-int func2(const Field& field)
+int func2(const vector<vector<int>> &field)
 {
   int term1 = measure_distance(field) * _weights[1];
   int term2 = count_weighted_pair(field, _weight_matrix2) * _weights[3];
   return -term1 + term2;
 }
 
-int func3(const Field& field)
+int func3(const vector<vector<int>> &field)
 {
   int term1 = count_pair(field) * _weights[0];
   int term2 = measure_distance(field) * _weights[1];
@@ -312,7 +315,7 @@ int func3(const Field& field)
   return term1 - term2;
 }
 
-int func4(const Field& field)
+int func4(const vector<vector<int>> &field)
 {
   int term1 = count_pair(field) * _weights[0];
   int term2 = measure_distance(field) * _weights[1];
@@ -321,9 +324,9 @@ int func4(const Field& field)
 }
 
 // 外周2マスにあるペアを評価する。外側ほど高スコア。
-int evaluate_outer_rim_pairs(const Field& field)
+int evaluate_outer_rim_pairs(const vector<vector<int>>& field)
 {
-    const int field_size = field.size;
+    const int field_size = field.size();
     if (field_size < 4)
     {
         return 0;
@@ -331,33 +334,26 @@ int evaluate_outer_rim_pairs(const Field& field)
 
     long long total_score = 0;
 
-    const auto get_rim_weight = [&](int pos) -> int {
-        if (pos == 0 || pos == field_size - 1) return 8; // 最も外側
-        if (pos == 1 || pos == field_size - 2) return 4; // 2番目に外側
-        if (pos == 2 || pos == field_size - 3) return 2; // 3番目に外側
-        if (pos == 3 || pos == field_size - 4) return 1; // 4番目に外側
+    auto get_rim_weight = [&](int pos) {
+        if (pos == 0 || pos == field_size - 1) return 4; // 最も外側
+        if (pos == 1 || pos == field_size - 2) return 2; // 2番目に外側
         return 0;
     };
 
-    const auto& data = field.data;
     // 水平方向のペアをチェック
     for (int y = 0; y < field_size; ++y) {
-        int row_start = y * field_size;
         for (int x = 0; x < field_size - 1; ++x) {
-            int idx = row_start + x;
-            if (data[idx] == data[idx + 1] && (y < 4 || y >= field_size - 4 || x < 4 || x >= field_size - 4 -1)) {
-                total_score += get_rim_weight(y) * 2 + get_rim_weight(x) + get_rim_weight(x + 1);
+            if (field[y][x] == field[y][x + 1]) {
+                total_score += get_rim_weight(y) + get_rim_weight(x) + get_rim_weight(x + 1);
             }
         }
     }
 
     // 垂直方向のペアをチェック
     for (int y = 0; y < field_size - 1; ++y) {
-        int row_start = y * field_size;
         for (int x = 0; x < field_size; ++x) {
-            int idx = row_start + x;
-            if (data[idx] == data[idx + field_size] && (y < 4 || y >= field_size - 4 -1 || x < 4 || x >= field_size - 4)) {
-                total_score += get_rim_weight(x) * 2 + get_rim_weight(y) + get_rim_weight(y + 1);
+            if (field[y][x] == field[y + 1][x]) {
+                total_score += get_rim_weight(x) + get_rim_weight(y) + get_rim_weight(y + 1);
             }
         }
     }
@@ -365,49 +361,88 @@ int evaluate_outer_rim_pairs(const Field& field)
     return static_cast<int>(total_score);
 }
 
-// 中心からの距離に基づいてペアを評価する関数
-// 探索の進行度(progress)に応じて、評価の重点を外側から内側へ動的にシフトさせる
-int evaluate_by_distance_from_center(const Field& field, double progress) {
-    const int size = field.size;
-    const double center = (size - 1.0) / 2.0;
-    long long total_score = 0;
+// 完成したペアの連結性を評価する
+// 隣接するペアが多いほど高スコア
+int evaluate_connectivity(const vector<vector<int>>& field)
+{
+    const int field_size = field.size();
+    if (field_size == 0)
+    {
+        return 0;
+    }
 
-    // progress (0.0 -> 1.0) に応じて、評価の重点を置く「リング」の半径を決定
-    // progress=0.0 のとき、最も外側を重視
-    // progress=1.0 のとき、中心を重視
-    const double target_radius = center * (1.0 - progress);
+    int connectivity_score = 0;
 
-    const auto get_weight = [&](double dist_from_center) {
-        // target_radiusからの距離が小さいほど高い重みを与えるガウス関数的な重み付け
-        double diff = dist_from_center - target_radius;
-        // 分散を調整して、重みの集中度合いを変える (小さいほどシャープになる)
-        double sigma = center / 4.0; // 例: 半径の1/4を標準偏差とする
-        return static_cast<long long>(1000.0 * exp(-(diff * diff) / (2.0 * sigma * sigma)));
-    };
-
-    const auto& data = field.data;
-    // 水平ペア
-    for (int y = 0; y < size; ++y) {
-        int row_start = y * size;
-        for (int x = 0; x < size - 1; ++x) {
-            int idx = row_start + x;
-            if (data[idx] == data[idx + 1]) {
-                double dist_y = y - center;
-                double dist_x = (x + 0.5) - center;
-                total_score += get_weight(sqrt(dist_x * dist_x + dist_y * dist_y));
+    // 水平方向のペアの隣接をチェック
+    for (int y = 0; y < field_size; ++y)
+    {
+        for (int x = 0; x < field_size - 1; ++x)
+        {
+            if (field[y][x] == field[y][x + 1])
+            {
+                // 下に水平ペアがあるか
+                if (y < field_size - 1 && field[y + 1][x] == field[y + 1][x + 1])
+                {
+                    connectivity_score++;
+                }
+                // 右に水平ペアがあるか
+                if (x < field_size - 2 && field[y][x + 1] == field[y][x + 2])
+                {
+                    connectivity_score++;
+                }
             }
         }
     }
-    // 垂直ペア
-    for (int i = 0; i < size * (size - 1); ++i) {
-        if (data[i] == data[i + size]) {
-            int y = i / size;
-            int x = i % size;
-            double dist_y = (y + 0.5) - center;
-            double dist_x = x - center;
-            total_score += get_weight(sqrt(dist_x * dist_x + dist_y * dist_y));
+
+    // 垂直方向のペアの隣接をチェック
+    for (int y = 0; y < field_size - 1; ++y)
+    {
+        for (int x = 0; x < field_size; ++x)
+        {
+            if (field[y][x] == field[y + 1][x])
+            {
+                // 右に垂直ペアがあるか
+                if (x < field_size - 1 && field[y][x + 1] == field[y + 1][x + 1])
+                {
+                    connectivity_score++;
+                }
+            }
         }
     }
 
-    return static_cast<int>(total_score);
+    return connectivity_score;
+}
+
+// ペア候補間の障害物の数を数える
+int count_obstacles(const vector<vector<int>>& field)
+{
+    const int field_size = field.size();
+    if (field_size == 0)
+    {
+        return 0;
+    }
+
+    std::unordered_map<int, Point> first_pos;
+    first_pos.reserve(field_size * field_size / 2);
+    int obstacle_count = 0;
+
+    for (int y = 0; y < field_size; ++y)
+    {
+        for (int x = 0; x < field_size; ++x)
+        {
+            int number = field[y][x];
+            auto it = first_pos.find(number);
+
+            if (it == first_pos.end())
+            {
+                first_pos.emplace(number, Point{x, y});
+            }
+            else
+            {
+                const Point p1 = it->second;
+                obstacle_count += abs(p1.x - x) + abs(p1.y - y) - 1;
+            }
+        }
+    }
+    return obstacle_count;
 }

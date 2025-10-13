@@ -15,6 +15,8 @@ from typing import Dict, Any, Optional, Tuple
 # サーバー/API関連
 API_URL: str = "http://172.19.0.1:80/"  # 競技サーバー用APIのURL
 TOKEN: str = "fukuid01bdb9d3e3c85f604f57ebc2994279f621a0233021aaa52ca082a832df"  # 認証トークン
+# API_URL: str = "http://localhost:3000"  # 競技サーバー用APIのURL
+# TOKEN: str = "player1"  # 認証トークン
 
 # ソルバーで必要なファイルのパス
 PROBLEM_PATH: str = "testcase/problem.json"
@@ -253,7 +255,7 @@ def main():
         # if os.path.exists(PROBLEM_PATH):
         #     os.remove(PROBLEM_PATH)
         #     print(f"'{PROBLEM_PATH}' を削除しました。")
-        for path in glob.glob("testcase/answer*.json") + glob.glob("testcase/problem*.txt") + glob.glob("testcase/answer*.txt"):
+        for path in glob.glob("testcase/answer_*.json") + glob.glob("testcase/problem_*.txt") + glob.glob("testcase/answer_*.txt"):
             os.remove(path)
             print(f"'{path}' を削除しました。")
 
