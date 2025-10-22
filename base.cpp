@@ -18,8 +18,9 @@ using std::vector;
 // テスト済 - in-place回転で最適化
 void rotate(vector<vector<int>> &field, Operation op)
 {
+  int field_size = field.size();
   // 安全性チェック: 範囲外アクセス防止
-  int N = static_cast<int>(field.size());
+  int N = field_size;
   if (N <= 0) return;
   if (op.n < 2) return;
   if (op.x < 0 || op.y < 0) return;
@@ -59,8 +60,9 @@ void rotate(vector<vector<int>> &field, Operation op)
 // テスト済 - in-place反時計回りで最適化（rotateの逆操作を一回で実行）
 void unrotate(vector<vector<int>> &field, Operation op)
 {
+  int field_size = field.size();
   // 安全性チェック: 範囲外アクセス防止
-  int N = static_cast<int>(field.size());
+  int N = field_size;
   if (N <= 0) return;
   if (op.n < 2) return;
   if (op.x < 0 || op.y < 0) return;
@@ -99,13 +101,14 @@ void unrotate(vector<vector<int>> &field, Operation op)
 bool check_around_pair(const vector<vector<int>> &field)
 {
   int counter = 0;
+  int field_size = field.size();
 
   int base_x,base_y;
   base_y=0;
   // 上1行目
-  for (int x = 0; x <= field.size() - 1; x++)
+  for (int x = 0; x <= field_size - 1; x++)
   {
-    if (x == field.size() - 1 && field[base_y][x] == field[base_y + 1][x])
+    if (x == field_size - 1 && field[base_y][x] == field[base_y + 1][x])
     {
       counter++;
       break;
@@ -118,7 +121,7 @@ bool check_around_pair(const vector<vector<int>> &field)
   }
   base_y = 1;
   // 上2行目
-  for (int x = 0; x <= field.size() - 1; x++)
+  for (int x = 0; x <= field_size - 1; x++)
   {
     if (field[base_y][x] == field[base_y][x + 1])
     {
@@ -128,9 +131,9 @@ bool check_around_pair(const vector<vector<int>> &field)
 
   base_x = 0;
   // 左1列目
-  for (int y = 2; y < field.size() - 1; y++)
+  for (int y = 2; y < field_size - 1; y++)
   {
-    if (y == field.size() - 1 && field[y][base_x] == field[y][base_x+1])
+    if (y == field_size - 1 && field[y][base_x] == field[y][base_x+1])
     {
       counter++;
       break;
@@ -143,34 +146,73 @@ bool check_around_pair(const vector<vector<int>> &field)
   }
   // 左2列目
   base_x = 1;
-  for (int y = 2; y < field.size() - 1; y++)
+  for (int y = 2; y < field_size - 1; y++)
   {
     if (field[y][base_x] == field[y + 1][base_x])
     {
       counter++;
     }
   }
-  return counter == (field.size() * 2 - 2);
+  return counter == (field_size * 2 - 2);
+}
+
+// 外周2マスがすべてペアで埋まっているかチェックする
+bool check_outer_rim_filled(const vector<vector<int>>& field) {
+    const int size = field.size();
+    if (size < 4) return true; // 4未満ならチェック不要
+
+    // 上2行
+    for (int y = 0; y < 2; ++y) {
+        for (int x = 0; x < size; ++x) {
+            if (field[y][x] != (x < size - 1 ? field[y][x+1] : -1) &&
+                field[y][x] != (y < 1 ? field[y+1][x] : -1)) {
+                return false;
+            }
+        }
+    }
+    // 下2行
+    for (int y = size - 2; y < size; ++y) {
+        for (int x = 0; x < size; ++x) {
+            if (field[y][x] != (x < size - 1 ? field[y][x+1] : -1) &&
+                field[y][x] != (y < size - 1 ? field[y+1][x] : -1)) {
+                return false;
+            }
+        }
+    }
+    // 左2列 (上下2行を除く)
+    for (int x = 0; x < 2; ++x) {
+        for (int y = 2; y < size - 2; ++y) {
+            if (field[y][x] != field[y][x+1] && field[y][x] != field[y+1][x]) return false;
+        }
+    }
+    // 右2列 (上下2行を除く)
+    for (int x = size - 2; x < size; ++x) {
+        for (int y = 2; y < size - 2; ++y) {
+            if (field[y][x] != (x < size - 1 ? field[y][x+1] : -1) && field[y][x] != field[y+1][x]) return false;
+        }
+    }
+    return true;
 }
 
 bool check_all_pair(const vector<vector<int>> &field)
 {
-  return field.size() * field.size() / 2 == count_pair(field);
+  int field_size = field.size();
+  return field_size * field_size / 2 == count_pair(field);
 }
 
 // // ペアの数を数える
 // // テスト済
 // int count_pair(const vector<vector<int>>& field){
 //     int counter = 0;
-//     for (int y = 0; y < field.size(); y++) {
-//         for (int x = 0; x < field.size() -1 ; x++) {
+//     for (int y = 0; y < field_size; y++) {
+//         for (int x = 0; x < field_size -1 ; x++) {
 //             if(field[y][x] == field[y][x+1]){
 //                 counter++;
 //             }
 //         }
 //     }
-//     for (int y = 0; y < field.size()-1; y++) {
-//         for (int x = 0; x < field.size(); x++) {
+//     for (int y = 0; y < field_size-1; y++) {
+//         for (int x = 0; x < field_size; x++) {
 //             if(field[y][x] == field[y+1][x]){
 //                 counter++;
 //             }
@@ -181,7 +223,8 @@ bool check_all_pair(const vector<vector<int>> &field)
 
 int count_pair(const vector<vector<int>> &field)
 {
-  const int n = static_cast<int>(field.size());
+  int field_size = field.size();
+  const int n = static_cast<int>(field_size);
   if (n <= 0)
     return 0;
 
@@ -212,16 +255,17 @@ int count_pair(const vector<vector<int>> &field)
 // テスト済
 void print_matrix(const vector<vector<int>> &field)
 {
+  int field_size = field.size();
   cerr << "   ";
-  for (int i = 0; i < field.size(); i++)
+  for (int i = 0; i < field_size; i++)
   {
     cerr << setw(3) << i << "|";
   }
   cerr << endl;
-  for (int y = 0; y < field.size(); y++)
+  for (int y = 0; y < field_size; y++)
   {
     cerr << setw(2) << y << "|";
-    for (int x = 0; x < field.size(); x++)
+    for (int x = 0; x < field_size; x++)
     {
       cerr << setw(3) << field[y][x] << " ";
     }
@@ -234,16 +278,18 @@ void print_matrix(const vector<vector<int>> &field)
 // テスト済
 void print_matrix(const vector<vector<double>> &field)
 {
+  int field_size = field.size();
+
   cerr << "            ";
-  for (int i = 0; i < field.size(); i++)
+  for (int i = 0; i < field_size; i++)
   {
     cerr << setw(12) << i << "|";
   }
   cerr << endl;
-  for (int y = 0; y < field.size(); y++)
+  for (int y = 0; y < field_size; y++)
   {
     cerr << setw(11) << y << "|";
-    for (int x = 0; x < field.size(); x++)
+    for (int x = 0; x < field_size; x++)
     {
       cerr << setw(12) << field[y][x] << " ";
     }
