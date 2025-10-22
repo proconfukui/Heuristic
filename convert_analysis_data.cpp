@@ -34,8 +34,8 @@ int main(int argc, char* argv[]) {
     }
     
     // 各行をパース
-    vector<float> values;
-    vector<float> pair_ratios;
+    vector<double> values;
+    vector<double> pair_ratios;
     
     // 1行目: ステップ数（データの個数）
     int step_count;
@@ -44,14 +44,14 @@ int main(int argc, char* argv[]) {
     
     // 2行目: 評価値
     istringstream value_stream(lines[1]);
-    float value;
+    double value;
     while (value_stream >> value) {
         values.push_back(value);
     }
     
     // 3行目: ペア割合
     istringstream pair_stream(lines[2]);
-    float pair_ratio;
+    double pair_ratio;
     while (pair_stream >> pair_ratio) {
         pair_ratios.push_back(pair_ratio);
     }

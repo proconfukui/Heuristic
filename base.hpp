@@ -12,7 +12,7 @@ using std::vector;
 void rotate(vector<vector<int>> &field, Operation op);
 void unrotate(vector<vector<int>> &field, Operation op);
 void print_matrix(const vector<vector<int>> &field);
-void print_matrix(const vector<vector<float>> &field);
+void print_matrix(const vector<vector<double>> &field);
 int count_pair(const vector<vector<int>>& field);
 int rand_int(int a, int b);
 void apply_ops(vector<vector<int>>& field,const vector<Operation> ops);

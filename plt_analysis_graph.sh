@@ -97,24 +97,24 @@ mkdir -p "$TEMP_GB_DIR"
 # fi
 
 # # ペア割合グラフ
-# echo "  - ペア割合グラフを生成中..."
-# sed "s|analysis_pair_per_step\.png|analysis_pair_per_step${WEIGHT_SUFFIX}.png|g" ./gb/plt_analysis_pair_graph.gb > "$TEMP_GB_DIR/plt_analysis_pair_graph_temp.gb"
-# gnuplot "$TEMP_GB_DIR/plt_analysis_pair_graph_temp.gb"
-# if [ $? -eq 0 ]; then
-#     echo "    ✓ ./picture/analysis_pair_per_step${WEIGHT_SUFFIX}.png"
-# else
-#     echo "    ✗ ペア割合グラフの生成に失敗"
-# fi
-
-# 複合グラフ
-echo "  - 複合グラフを生成中..."
-sed "s|analysis_combined\.png|analysis_combined${WEIGHT_SUFFIX}.png|g" ./gb/plt_analysis_combined_graph.gb > "$TEMP_GB_DIR/plt_analysis_combined_graph_temp.gb"
-gnuplot "$TEMP_GB_DIR/plt_analysis_combined_graph_temp.gb"
+echo "  - ペア割合グラフを生成中..."
+sed "s|analysis_pair_per_step\.png|analysis_pair_per_step${WEIGHT_SUFFIX}.png|g" ./gb/plt_analysis_pair_graph.gb > "$TEMP_GB_DIR/plt_analysis_pair_graph_temp.gb"
+gnuplot "$TEMP_GB_DIR/plt_analysis_pair_graph_temp.gb"
 if [ $? -eq 0 ]; then
-    echo "    ✓ ./picture/analysis_combined${WEIGHT_SUFFIX}.png"
+    echo "    ✓ ./picture/analysis_pair_per_step${WEIGHT_SUFFIX}.png"
 else
-    echo "    ✗ 複合グラフの生成に失敗"
+    echo "    ✗ ペア割合グラフの生成に失敗"
 fi
+
+# # 複合グラフ
+# echo "  - 複合グラフを生成中..."
+# sed "s|analysis_combined\.png|analysis_combined${WEIGHT_SUFFIX}.png|g" ./gb/plt_analysis_combined_graph.gb > "$TEMP_GB_DIR/plt_analysis_combined_graph_temp.gb"
+# gnuplot "$TEMP_GB_DIR/plt_analysis_combined_graph_temp.gb"
+# if [ $? -eq 0 ]; then
+#     echo "    ✓ ./picture/analysis_combined${WEIGHT_SUFFIX}.png"
+# else
+#     echo "    ✗ 複合グラフの生成に失敗"
+# fi
 
 
 
